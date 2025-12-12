@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="{{ site.language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title }} - {{ site.name }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ page.description or site.description }}{% endblock %}">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <h1><a href="/">{{ site.name }}</a></h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about/">About</a>
+        </nav>
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 {{ site.name }}. Built with SSG.</p>
+    </footer>
+</body>
+</html>
