@@ -7,17 +7,20 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files
-COPY pyproject.toml requirements.txt ./
-COPY ssg/ ./ssg/
-COPY README.md ./
+# Copy requirements first for better caching
+COPY requirements.txt /app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e .
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy entire project
+COPY . /app/
+
+# Install SSG package
+RUN pip install --no-cache-dir -e /app/
 
 # Set site working directory
 WORKDIR /site
