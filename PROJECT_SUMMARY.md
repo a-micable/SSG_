@@ -326,7 +326,7 @@ Coverage: 59 tests across 6 files
 ## Deployment Options
 
 ### Static Hosts
-- GitHub Pages
+- static hosting
 - Netlify
 - Vercel
 - AWS S3 + CloudFront
@@ -443,10 +443,10 @@ This makes it an excellent resource for:
 
 ## Resources
 
-- **Repository**: https://github.com/a-micable/SSG
+- **Repository**: 
 - **Documentation**: See README.md, ARCHITECTURE.md, QUICKSTART.md
-- **Issues**: GitHub Issues for bugs and feature requests
-- **Discussions**: GitHub Discussions for questions and ideas
+- **Issues**: project issues for bugs and feature requests
+- **Discussions**: project discussions for questions and ideas
 
 ## License
 

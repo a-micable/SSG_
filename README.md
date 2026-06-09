@@ -30,7 +30,7 @@ A production-grade static site generator built with Python, featuring Markdown p
 
 ```bash
 # Clone the repository
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 
 # Install dependencies
@@ -331,7 +331,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ```bash
 # Clone the repository
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 
 # Create virtual environment
@@ -357,8 +357,8 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 ## Support
 
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/a-micable/SSG/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/a-micable/SSG/discussions)
+- **Issues**: [project issues](/issues)
+- **Discussions**: [project discussions](/discussions)
 
 ## Acknowledgments
 

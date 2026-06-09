@@ -2,7 +2,7 @@
 
 ## 🎉 All Requirements Met & Verified
 
-**Repository**: https://github.com/a-micable/SSG
+**Repository**: 
 **Status**: 100% Complete, Tested, and Deployed
 
 ---
@@ -258,7 +258,7 @@ tests/
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 ```
 
@@ -387,7 +387,7 @@ A **production-grade Python Static Site Generator** that meets and exceeds all r
 - ✅ **Production quality** throughout
 
 ### Repository
-🔗 **https://github.com/a-micable/SSG**
+🔗 ****
 
 ### Status
 🎉 **FULLY COMPLETE, VERIFIED, AND READY TO USE** 🎉

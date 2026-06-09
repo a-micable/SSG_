@@ -7,7 +7,7 @@ Successfully created and deployed a **production-grade Python Static Site Genera
 ## 📊 Final Statistics
 
 ### Repository
-- **URL**: https://github.com/a-micable/SSG
+- **URL**: 
 - **Status**: ✅ Live and Public
 - **Total Commits**: 316
 - **Time Span**: 12 months (June 2025 - April 2026)
@@ -126,22 +126,22 @@ SSG/
 ## 🔗 Quick Links
 
 ### Repository
-- **Main**: https://github.com/a-micable/SSG
-- **Commits**: https://github.com/a-micable/SSG/commits/main
-- **Network Graph**: https://github.com/a-micable/SSG/network
-- **Insights**: https://github.com/a-micable/SSG/pulse
+- **Main**: 
+- **Commits**: /commits/main
+- **Network Graph**: /network
+- **Insights**: /pulse
 
 ### Documentation
-- **README**: https://github.com/a-micable/SSG/blob/main/README.md
-- **Architecture**: https://github.com/a-micable/SSG/blob/main/ARCHITECTURE.md
-- **Contributing**: https://github.com/a-micable/SSG/blob/main/CONTRIBUTING.md
-- **Quick Start**: https://github.com/a-micable/SSG/blob/main/QUICKSTART.md
+- **README**: /blob/main/README.md
+- **Architecture**: /blob/main/ARCHITECTURE.md
+- **Contributing**: /blob/main/CONTRIBUTING.md
+- **Quick Start**: /blob/main/QUICKSTART.md
 
 ## 🚀 Usage
 
 ### Install
 ```bash
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 pip install -e .
 ```
@@ -241,7 +241,7 @@ The repository is:
 ## 📈 Next Steps
 
 ### Immediate
-1. ✅ Repository is live at https://github.com/a-micable/SSG
+1. ✅ Repository is live at 
 2. ✅ All 316 commits pushed successfully
 3. ✅ Documentation complete
 4. ✅ Tests passing
@@ -288,7 +288,7 @@ You now have a **production-grade Python static site generator** with:
 
 ## 🌟 Repository Highlights
 
-Visit https://github.com/a-micable/SSG to see:
+Visit  to see:
 - Beautiful contribution graph
 - Detailed commit history
 - Professional README
@@ -302,7 +302,7 @@ Visit https://github.com/a-micable/SSG to see:
 
 Your SSG project is now live on GitHub with a rich, realistic development history that showcases professional software engineering practices.
 
-**Repository**: https://github.com/a-micable/SSG
+**Repository**: 
 **Status**: ✅ Deployed Successfully
 **Commits**: 316 over 12 months
 **Quality**: Production Grade

@@ -35,7 +35,7 @@ This project follows a simple code of conduct:
 
 ### Finding Issues to Work On
 
-1. Check the [GitHub Issues](https://github.com/a-micable/SSG/issues) page
+1. Check the [project issues](/issues) page
 2. Look for issues labeled `good first issue` or `help wanted`
 3. Comment on the issue to express interest
 4. Wait for maintainer confirmation before starting work
@@ -51,7 +51,7 @@ git clone https://github.com/YOUR_USERNAME/SSG.git
 cd SSG
 
 # Add upstream remote
-git remote add upstream https://github.com/a-micable/SSG.git
+git remote add upstream .git
 ```
 
 ### 2. Create Virtual Environment
@@ -501,7 +501,7 @@ Mockups, examples, or related features.
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/a-micable/SSG/discussions)
+- Open a [Discussion](/discussions)
 - Ask in an existing issue
 - Reach out to maintainers
 

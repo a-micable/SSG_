@@ -6,7 +6,7 @@ Successfully created a realistic Git history for the SSG (Static Site Generator)
 
 ## Repository Details
 
-- **GitHub Repository**: https://github.com/a-micable/SSG
+- **GitHub Repository**: 
 - **Total Commits**: 315
 - **Time Span**: June 10, 2025 → April 16, 2026 (12 months)
 - **Development Pattern**: Realistic incremental development with natural evolution
@@ -266,7 +266,7 @@ git log --graph --oneline --all --decorate
 ```
 
 ### View Commit Graph on GitHub
-Visit: https://github.com/a-micable/SSG/network
+Visit: /network
 
 ## Repository Status
 
@@ -279,7 +279,7 @@ Visit: https://github.com/a-micable/SSG/network
 ## Viewing the History
 
 ### On GitHub
-1. Visit https://github.com/a-micable/SSG
+1. Visit 
 2. Click "Insights" → "Network" for visual graph
 3. Click "Commits" to see chronological history
 4. Use "History" on any file to see its evolution
@@ -339,6 +339,6 @@ Perfect for showcasing:
 ---
 
 **Generated**: June 9, 2026
-**Repository**: https://github.com/a-micable/SSG
+**Repository**: 
 **Total Commits**: 315
 **Time Span**: 12 months (2025-06-10 to 2026-04-16)

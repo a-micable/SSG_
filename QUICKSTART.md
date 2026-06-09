@@ -7,7 +7,7 @@ Get up and running with SSG in 5 minutes!
 ### Option 1: Install from Source
 
 ```bash
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 pip install -e .
 ```
@@ -345,7 +345,7 @@ Use custom date formats in templates:
 
 Your built site in `dist/` is ready to deploy to:
 
-- GitHub Pages
+- static hosting
 - Netlify
 - Vercel
 - AWS S3
@@ -361,7 +361,7 @@ ssg build
 # Example: Copy to server
 scp -r dist/* user@server:/var/www/html/
 
-# Example: GitHub Pages
+# Example: static hosting
 cd dist
 git init
 git add .
@@ -404,7 +404,7 @@ ssg serve --help
 
 - Check [README.md](README.md) for detailed docs
 - Review [ARCHITECTURE.md](ARCHITECTURE.md) for internals
-- Open an [issue](https://github.com/a-micable/SSG/issues) on GitHub
+- Open an [issue](/issues) on GitHub
 
 ## What's Next?
 

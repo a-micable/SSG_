@@ -180,9 +180,9 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Links
 
-- **Repository**: https://github.com/a-micable/SSG
-- **Issues**: https://github.com/a-micable/SSG/issues
-- **Discussions**: https://github.com/a-micable/SSG/discussions
+- **Repository**: 
+- **Issues**: /issues
+- **Discussions**: /discussions
 
 ---
 

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>demo-site</title><link>https://example.com</link><description>A site built with SSG</description><language>en</language><atom:link href="https://example.com/rss.xml" rel="self" type="application/rss+xml" /><item><title>Hello World!</title><link>https://example.com/hello-world/</link><guid>https://example.com/hello-world/</guid><description>Welcome to your new static site</description><pubDate>Fri, 15 Mar 2024 00:00:00 +0000</pubDate><author>SSG</author><category>welcome</category><category>getting-started</category></item><item><title>About</title><link>https://example.com/about/</link><guid>https://example.com/about/</guid><description>&lt;h1&gt;About This Site&lt;/h1&gt;
-&lt;p&gt;This site is built with &lt;a href="https://github.com/yourusername/ssg"&gt;SSG&lt;/a&gt;, a production-grade static site generator.&lt;/p&gt;
-&lt;h2&gt;Technology&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Python 3.11+&lt;/li&gt;...</description><author>Your Name</author></item></channel></rss>

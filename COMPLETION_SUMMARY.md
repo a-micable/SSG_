@@ -182,7 +182,7 @@ All documentation complete and comprehensive:
 ### Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 
 # Install dependencies
@@ -228,7 +228,7 @@ docker run --rm -v $(pwd)/mysite:/site ssg build
 
 ## 🔗 Links
 
-- **Repository**: https://github.com/a-micable/SSG
+- **Repository**: 
 - **Commits**: 324 total
 - **Branch**: main
 - **Latest Commit**: Fix test_config.py imports
@@ -333,7 +333,7 @@ The project is ready for:
 - Further development
 - Community contributions
 
-**Repository**: https://github.com/a-micable/SSG
+**Repository**: 
 
 ---
 

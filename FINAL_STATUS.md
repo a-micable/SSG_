@@ -3,7 +3,7 @@
 ## ✅ All Requirements Delivered
 
 ### Repository
-**Live at**: https://github.com/a-micable/SSG
+**Live at**: 
 
 ### Final Statistics
 - **Total Commits**: 318
@@ -221,7 +221,7 @@ Month 10-12: Advanced features & release
 ## 🚀 Repository Status
 
 ### Live & Accessible
-- **URL**: https://github.com/a-micable/SSG
+- **URL**: 
 - **Branch**: main
 - **Status**: Public
 - **Commits**: 318
@@ -239,7 +239,7 @@ Month 10-12: Advanced features & release
 ### Quick Start
 ```bash
 # Clone
-git clone https://github.com/a-micable/SSG.git
+git clone .git
 cd SSG
 
 # Install
@@ -333,7 +333,7 @@ A **production-grade Python Static Site Generator** with:
 - ✅ No boilerplate
 
 ### Repository
-**Live at**: https://github.com/a-micable/SSG
+**Live at**: 
 
 ### Status
 🎉 **COMPLETE & DEPLOYED** 🎉
@@ -344,4 +344,4 @@ A **production-grade Python Static Site Generator** with:
 **Ready for production use**
 **Open for contributions**
 
-**Visit**: https://github.com/a-micable/SSG
+**Visit**: 

@@ -609,4 +609,4 @@ For issues not covered here, see:
 - [README.md](README.md) for general usage
 - [ARCHITECTURE.md](ARCHITECTURE.md) for internals
 - [CONTRIBUTING.md](CONTRIBUTING.md) for development
-- [GitHub Issues](https://github.com/a-micable/SSG/issues) for bug reports
+- [project issues](/issues) for bug reports
