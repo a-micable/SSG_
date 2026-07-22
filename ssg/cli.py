@@ -10,6 +10,7 @@ import click
 from .config import ConfigLoader, SiteConfig, ConfigError
 from .builder import SiteBuilder, BuildError
 from .watcher import FileWatcher
+from .analyzer import Analyzer, AnalysisError
 
 
 @click.group()
@@ -396,6 +397,60 @@ footer {
         
     except Exception as e:
         click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+        raise click.Abort()
+
+
+
+
+@cli.command()
+@click.option('--path', type=click.Path(path_type=Path), default='.', help='Path to repository or project root')
+@click.option('--format', 'outfmt', type=click.Choice(['text', 'json'], case_sensitive=False), default='text', help='Output format')
+@click.option('--output', '-o', type=click.Path(path_type=Path), default=None, help='Write report to file')
+def analyze(path: Path, outfmt: str, output: Path | None):
+    """
+    Analyze a codebase for quality, security exposure, language mix, repository metrics, and operational readiness.
+
+    Example:
+        ssg analyze --path . --format json --output analysis.json
+    """
+    try:
+        click.echo(f"Analyzing repository at {path}")
+        analyzer = Analyzer(root=path)
+        report = analyzer.run()
+
+        if outfmt.lower() == 'json':
+            import json
+
+            content = json.dumps(report, indent=2)
+        else:
+            # simple textual summary
+            lines = []
+            lines.append(f"Repository path: {report.get('root')}")
+            lines.append(f"Total files: {report.get('total_files')}")
+            lines.append("Languages:")
+            for lang, cnt in report.get('languages', {}).items():
+                lines.append(f"  {lang}: {cnt} files, {report.get('loc', {}).get(lang, 0)} loc")
+            lines.append("Operational readiness:")
+            for k, v in report.get('operational', {}).items():
+                lines.append(f"  {k}: {v}")
+            if report.get('warnings'):
+                lines.append("Security / Quality warnings:")
+                for w in report.get('warnings')[:10]:
+                    lines.append(f"  - {w}")
+
+            content = "\n".join(lines)
+
+        if output:
+            output.write_text(content, encoding='utf-8')
+            click.echo(click.style(f"Report written to {output}", fg='green'))
+        else:
+            click.echo(content)
+
+    except AnalysisError as e:
+        click.echo(click.style(f"Analysis error: {e}", fg='red'), err=True)
+        raise click.Abort()
+    except Exception as e:
+        click.echo(click.style(f"Unexpected error during analysis: {e}", fg='red'), err=True)
         raise click.Abort()
 
 

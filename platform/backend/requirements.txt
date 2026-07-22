@@ -1,0 +1,13 @@
+fastapi>=0.95.0
+uvicorn[standard]>=0.20.0
+pydantic>=1.10
+requests>=2.28
+python-dotenv>=1.0.0
+SQLAlchemy>=2.0
+alembic>=1.10
+psycopg2-binary>=2.9
+celery[redis]>=5.3
+redis>=4.5
+python-jose>=3.3.0
+passlib[bcrypt]>=1.7
+# reuse local ssg package in editable mode during development

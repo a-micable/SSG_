@@ -2,6 +2,18 @@
 
 A production-grade static site generator built with Python, featuring Markdown parsing, Jinja2 templating, asset fingerprinting, RSS feeds, and more.
 
+## Private Codebase Analysis Platform
+
+This repository now also includes a lightweight, private software platform for analyzing codebase quality, security exposure, language mix, repository metrics, and operational readiness. The analysis is intentionally local-first and privacy-focused — analysis runs on your machine and no data is transmitted externally.
+
+Key capabilities:
+- File & language mix analysis (counts and LOC by language)
+- Simple heuristic security/quality scanning for suspicious patterns (`eval`, `exec`, `password`, `secret`, `TODO`, `FIXME`)
+- Operational readiness checks (Dockerfile, CI workflows, tests, dependency files)
+- JSON or text report output
+
+Use the `ssg analyze` command (documented below) to run an analysis on any repository or project directory.
+
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
