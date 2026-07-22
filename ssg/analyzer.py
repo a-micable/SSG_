@@ -1,6 +1,11 @@
 from pathlib import Path
 from .scanner import Scanner
-from .metrics import languages_from_ext, loc_summary
+from .metrics import (
+    languages_from_ext,
+    loc_summary,
+    languages_from_lang,
+    loc_summary_from_lang,
+)
 from typing import Dict, Any
 
 
@@ -23,8 +28,26 @@ class Analyzer:
         files_by_ext = scan.get('files_by_ext', {})
         loc_by_ext = scan.get('loc_by_ext', {})
 
-        languages = languages_from_ext(files_by_ext)
-        loc = loc_summary(loc_by_ext)
+        # prefer content-detected language summaries when available
+        files_by_lang = scan.get('files_by_lang')
+        loc_by_lang = scan.get('loc_by_lang')
+
+        if files_by_lang and loc_by_lang:
+            languages = languages_from_lang(files_by_lang)
+            loc = loc_summary_from_lang(loc_by_lang)
+        else:
+            languages = languages_from_ext(files_by_ext)
+            loc = loc_summary(loc_by_ext)
+
+        # compute totals excluding boilerplate
+        boilerplate = scan.get('boilerplate_files', [])
+        total_files = sum(files_by_ext.values())
+        non_boilerplate_files = total_files - len(boilerplate)
+        total_loc = sum(loc.values())
+        non_boilerplate_loc = total_loc
+        # best-effort: if loc_by_lang present, sum those; otherwise rely on loc
+        if loc_by_lang:
+            non_boilerplate_loc = sum(loc_by_lang.values())
 
         operational = {
             'has_dockerfile': (self.root / 'Dockerfile').exists(),
@@ -39,6 +62,9 @@ class Analyzer:
         report = {
             'root': str(self.root),
             'total_files': total_files,
+            'boilerplate_count': len(boilerplate),
+            'non_boilerplate_files': non_boilerplate_files,
+            'non_boilerplate_loc': non_boilerplate_loc,
             'languages': dict(sorted(languages.items(), key=lambda kv: -kv[1])),
             'loc': dict(sorted(loc.items(), key=lambda kv: -kv[1])),
             'operational': operational,
