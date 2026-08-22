@@ -10,7 +10,7 @@ This package provides a complete static site generation system with:
 - Development server with live reload
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = "SSG Contributors"
 
 
