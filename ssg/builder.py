@@ -6,6 +6,7 @@ Handles incremental builds and dependency tracking.
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Set, Optional
+import re
 import shutil
 from .config import SiteConfig
 from .parser import MarkdownParser, ParsedContent
@@ -22,12 +23,7 @@ class BuildError(Exception):
 
 
 class DependencyGraph:
-    """
-    Tracks dependencies between content, templates, and outputs.
-
-    BUG 2 LOCATION: Cache invalidation doesn't properly handle template changes.
-    When a template changes, dependent pages aren't always rebuilt.
-    """
+    """Tracks content-to-template edges including transitive includes."""
 
     def __init__(self):
         """Initialize the dependency graph."""
@@ -45,26 +41,19 @@ class DependencyGraph:
         self.template_includes[parent_template].add(included_template)
 
     def get_affected_content(self, changed_template: Path) -> Set[Path]:
-        """
-        Get all content that needs rebuilding when a template changes.
-
-        BUG 2: This doesn't recursively check template includes properly.
-        When base.html changes, only direct dependents rebuild, not transitive ones.
-
-        Example:
-            base.html (changed)
-            └── post.html (includes base.html)
-                └── article.md (uses post.html)
-
-        Expected: article.md rebuilds
-        Actual: article.md doesn't rebuild (BUG!)
-        """
-        affected = set(self.template_to_content.get(changed_template, set()))
-
-        # BUG 2: Missing recursive check for template inheritance
-        # Should also check templates that include the changed template
-        # This causes stale output when base templates change
-
+        """Return content that must rebuild when a template (or its includers) change."""
+        affected: Set[Path] = set()
+        stack = [changed_template]
+        seen: Set[Path] = set()
+        while stack:
+            current = stack.pop()
+            if current in seen:
+                continue
+            seen.add(current)
+            affected.update(self.template_to_content.get(current, set()))
+            for parent, included in self.template_includes.items():
+                if current in included and parent not in seen:
+                    stack.append(parent)
         return affected
 
 
@@ -150,6 +139,7 @@ class SiteBuilder:
         # Track template dependency
         template_path = self.config.template_dir / content.layout
         self.dependency_graph.add_content_dependency(content.source_path, template_path)
+        self._record_template_chain(template_path)
 
         # Render content
         html = self.renderer.render_content(content)
@@ -157,6 +147,20 @@ class SiteBuilder:
         # Write output
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html, encoding="utf-8")
+
+    def _record_template_chain(self, template_path: Path) -> None:
+        """Record {% extends %} parents so base-template edits rebuild child pages."""
+        current = template_path
+        seen: Set[Path] = set()
+        while current.exists() and current not in seen:
+            seen.add(current)
+            text = current.read_text(encoding="utf-8", errors="ignore")
+            match = re.search(r"""\{%\s*extends\s+["']([^"']+)["']""", text)
+            if not match:
+                break
+            parent = self.config.template_dir / match.group(1)
+            self.dependency_graph.add_template_include(current, parent)
+            current = parent
 
     def build_content_pages(self):
         """Build individual content pages."""
@@ -285,14 +289,7 @@ class SiteBuilder:
         print("=" * 70)
 
     def rebuild_changed(self, changed_files: List[Path]):
-        """
-        Rebuild only files affected by changes.
-
-        BUG 2 IMPACT: Template changes may not trigger all necessary rebuilds.
-
-        Args:
-            changed_files: List of changed file paths
-        """
+        """Rebuild content files affected by content or template changes."""
         content_to_rebuild = set()
 
         for changed_file in changed_files:
@@ -300,7 +297,6 @@ class SiteBuilder:
             if changed_file.suffix in [".md", ".markdown"]:
                 content_to_rebuild.add(changed_file)
 
-            # Check if it's a template (BUG 2: Incomplete dependency tracking)
             elif changed_file.suffix in [".html", ".jinja2", ".j2"]:
                 affected = self.dependency_graph.get_affected_content(changed_file)
                 content_to_rebuild.update(affected)

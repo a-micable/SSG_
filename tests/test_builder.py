@@ -135,12 +135,9 @@ class TestDependencyGraph:
         graph.add_template_include(post_template, base_template)
         graph.add_content_dependency(article, post_template)
 
-        # BUG 2: When base.html changes, article.md should rebuild
-        # but get_affected_content doesn't check transitive dependencies
         affected = graph.get_affected_content(base_template)
 
-        # BUG 2: This will be empty because transitive deps aren't tracked
-        assert len(affected) == 0  # BUG! Should include article
+        assert article in affected
 
 
 class TestSiteBuilder:
