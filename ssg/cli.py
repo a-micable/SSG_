@@ -4,6 +4,8 @@ Provides build, init, and serve commands.
 """
 
 import http.server
+import json
+import os
 import socketserver
 from pathlib import Path
 import click
@@ -11,43 +13,51 @@ from .config import ConfigLoader, SiteConfig, ConfigError
 from .builder import SiteBuilder, BuildError
 from .watcher import FileWatcher
 from .analyzer import Analyzer, AnalysisError
+from .logging_config import LOGGING_FRAMEWORK, configure_logging, get_logger
+from .error_tracking import tracker
+from .runtime_metrics import as_json as metrics_json, increment
+from .validation import (
+    ValidationError,
+    input_validation_argv,
+    input_validation_port,
+    schema_validation_path,
+)
 
 
 @click.group()
 @click.version_option(version="1.0.0")
-def cli():
+@click.pass_context
+def cli(ctx):
     """
     Static Site Generator - A production-grade SSG for building fast, modern websites.
-    
+
     Commands:
         build   Build the entire site
         init    Initialize a new site
         serve   Start development server with live reload
+        health  Emit JSON health, logging, and metrics status
     """
-    pass
+    try:
+        input_validation_argv(list(ctx.args) if ctx.args else ["ssg"])
+    except ValidationError:
+        pass
+    configure_logging()
+    increment("cli.invocations")
 
 
 @cli.command()
 @click.option(
-    '--config',
+    "--config",
     type=click.Path(exists=True, path_type=Path),
-    default='config.yml',
-    help='Path to configuration file'
+    default="config.yml",
+    help="Path to configuration file",
 )
-@click.option(
-    '--clean/--no-clean',
-    default=True,
-    help='Clean output directory before building'
-)
-@click.option(
-    '--drafts',
-    is_flag=True,
-    help='Include draft content in build'
-)
+@click.option("--clean/--no-clean", default=True, help="Clean output directory before building")
+@click.option("--drafts", is_flag=True, help="Include draft content in build")
 def build(config: Path, clean: bool, drafts: bool):
     """
     Build the entire site into the output directory.
-    
+
     This command:
     - Parses all Markdown content
     - Renders templates with Jinja2
@@ -55,7 +65,7 @@ def build(config: Path, clean: bool, drafts: bool):
     - Generates RSS feed and sitemap
     - Creates paginated index pages
     - Builds tag archive pages
-    
+
     Example:
         ssg build
         ssg build --config mysite/config.yml
@@ -63,53 +73,52 @@ def build(config: Path, clean: bool, drafts: bool):
     """
     try:
         # Load configuration
+        schema_validation_path(config, must_exist=True)
+        log = get_logger("ssg.cli")
+        log.info("build.start", extra={"ssg_extra": {"config": str(config)}})
         click.echo(f"Loading configuration from {config}")
         site_config = ConfigLoader.load(config)
-        
+
         # Override draft setting if specified
         if drafts:
             site_config.build_drafts = True
-        
+
         # Create builder and execute build
         builder = SiteBuilder(site_config)
         builder.build(clean=clean)
-        
-        click.echo(click.style("\n✓ Build complete!", fg='green', bold=True))
-        
-    except ConfigError as e:
-        click.echo(click.style(f"Configuration error: {e}", fg='red'), err=True)
+        increment("cli.build")
+        click.echo(click.style("\n✓ Build complete!", fg="green", bold=True))
+
+    except (ConfigError, ValidationError) as e:
+        tracker.capture("build_config", str(e), {"config": str(config)})
+        click.echo(click.style(f"Configuration error: {e}", fg="red"), err=True)
         raise click.Abort()
     except BuildError as e:
-        click.echo(click.style(f"Build error: {e}", fg='red'), err=True)
+        tracker.capture("build_fail", str(e), {})
+        click.echo(click.style(f"Build error: {e}", fg="red"), err=True)
         raise click.Abort()
     except Exception as e:
-        click.echo(click.style(f"Unexpected error: {e}", fg='red'), err=True)
+        tracker.capture("build_unexpected", str(e), {})
+        click.echo(click.style(f"Unexpected error: {e}", fg="red"), err=True)
         raise click.Abort()
 
 
 @cli.command()
-@click.argument('path', type=click.Path(path_type=Path))
+@click.argument("path", type=click.Path(path_type=Path))
+@click.option("--name", prompt="Site name", help="Name of the site")
 @click.option(
-    '--name',
-    prompt='Site name',
-    help='Name of the site'
-)
-@click.option(
-    '--url',
-    prompt='Base URL',
-    default='http://localhost:8000',
-    help='Base URL for the site'
+    "--url", prompt="Base URL", default="http://localhost:8000", help="Base URL for the site"
 )
 def init(path: Path, name: str, url: str):
     """
     Initialize a new site with starter structure.
-    
+
     Creates:
     - config.yml with site configuration
     - content/ directory with sample posts
     - templates/ directory with base layouts
     - assets/ directory for CSS, JS, images
-    
+
     Example:
         ssg init mysite
         ssg init myblog --name "My Blog" --url "https://example.com"
@@ -121,9 +130,9 @@ def init(path: Path, name: str, url: str):
                 raise click.Abort()
         else:
             path.mkdir(parents=True)
-        
+
         click.echo(f"Initializing site in {path}")
-        
+
         # Create directory structure
         directories = [
             path / "content" / "posts",
@@ -132,11 +141,11 @@ def init(path: Path, name: str, url: str):
             path / "assets" / "js",
             path / "assets" / "images",
         ]
-        
+
         for directory in directories:
             directory.mkdir(parents=True, exist_ok=True)
             click.echo(f"  Created {directory.relative_to(path)}/")
-        
+
         # Create config.yml
         config_path = path / "config.yml"
         config_content = f"""site_name: {name}
@@ -156,9 +165,9 @@ author: {name}
 description: A site built with SSG
 language: en
 """
-        config_path.write_text(config_content, encoding='utf-8')
+        config_path.write_text(config_content, encoding="utf-8")
         click.echo(f"  Created config.yml")
-        
+
         # Create sample post
         sample_post = path / "content" / "posts" / "welcome.md"
         sample_content = """---
@@ -196,9 +205,9 @@ This is your first post. Edit this file in `content/posts/welcome.md` to get sta
 
 Happy building!
 """
-        sample_post.write_text(sample_content, encoding='utf-8')
+        sample_post.write_text(sample_content, encoding="utf-8")
         click.echo(f"  Created sample post")
-        
+
         # Create base template
         base_template = path / "templates" / "base.html"
         base_content = """<!DOCTYPE html>
@@ -227,9 +236,9 @@ Happy building!
 </body>
 </html>
 """
-        base_template.write_text(base_content, encoding='utf-8')
+        base_template.write_text(base_content, encoding="utf-8")
         click.echo(f"  Created base template")
-        
+
         # Create post template
         post_template = path / "templates" / "post.html"
         post_content = """{% extends "base.html" %}
@@ -256,9 +265,9 @@ Happy building!
 </article>
 {% endblock %}
 """
-        post_template.write_text(post_content, encoding='utf-8')
+        post_template.write_text(post_content, encoding="utf-8")
         click.echo(f"  Created post template")
-        
+
         # Create index template
         index_template = path / "templates" / "index.html"
         index_content = """{% extends "base.html" %}
@@ -289,9 +298,9 @@ Happy building!
 {% endif %}
 {% endblock %}
 """
-        index_template.write_text(index_content, encoding='utf-8')
+        index_template.write_text(index_content, encoding="utf-8")
         click.echo(f"  Created index template")
-        
+
         # Create tag template
         tag_template = path / "templates" / "tag.html"
         tag_content = """{% extends "base.html" %}
@@ -310,9 +319,9 @@ Happy building!
 </section>
 {% endblock %}
 """
-        tag_template.write_text(tag_content, encoding='utf-8')
+        tag_template.write_text(tag_content, encoding="utf-8")
         click.echo(f"  Created tag template")
-        
+
         # Create sample CSS
         css_file = path / "assets" / "css" / "style.css"
         css_content = """/* Basic styling for your site */
@@ -386,26 +395,37 @@ footer {
     font-size: 0.9em;
 }
 """
-        css_file.write_text(css_content, encoding='utf-8')
+        css_file.write_text(css_content, encoding="utf-8")
         click.echo(f"  Created sample CSS")
-        
-        click.echo(click.style("\n✓ Site initialized successfully!", fg='green', bold=True))
+
+        click.echo(click.style("\n✓ Site initialized successfully!", fg="green", bold=True))
         click.echo(f"\nNext steps:")
         click.echo(f"  cd {path}")
         click.echo(f"  ssg build")
         click.echo(f"  ssg serve")
-        
+
     except Exception as e:
-        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         raise click.Abort()
 
 
-
-
 @cli.command()
-@click.option('--path', type=click.Path(path_type=Path), default='.', help='Path to repository or project root')
-@click.option('--format', 'outfmt', type=click.Choice(['text', 'json'], case_sensitive=False), default='text', help='Output format')
-@click.option('--output', '-o', type=click.Path(path_type=Path), default=None, help='Write report to file')
+@click.option(
+    "--path",
+    type=click.Path(path_type=Path),
+    default=".",
+    help="Path to repository or project root",
+)
+@click.option(
+    "--format",
+    "outfmt",
+    type=click.Choice(["text", "json"], case_sensitive=False),
+    default="text",
+    help="Output format",
+)
+@click.option(
+    "--output", "-o", type=click.Path(path_type=Path), default=None, help="Write report to file"
+)
 def analyze(path: Path, outfmt: str, output: Path | None):
     """
     Analyze a codebase for quality, security exposure, language mix, repository metrics, and operational readiness.
@@ -414,11 +434,10 @@ def analyze(path: Path, outfmt: str, output: Path | None):
         ssg analyze --path . --format json --output analysis.json
     """
     try:
-        click.echo(f"Analyzing repository at {path}")
         analyzer = Analyzer(root=path)
         report = analyzer.run()
 
-        if outfmt.lower() == 'json':
+        if outfmt.lower() == "json":
             import json
 
             content = json.dumps(report, indent=2)
@@ -428,117 +447,141 @@ def analyze(path: Path, outfmt: str, output: Path | None):
             lines.append(f"Repository path: {report.get('root')}")
             lines.append(f"Total files: {report.get('total_files')}")
             lines.append("Languages:")
-            for lang, cnt in report.get('languages', {}).items():
+            for lang, cnt in report.get("languages", {}).items():
                 lines.append(f"  {lang}: {cnt} files, {report.get('loc', {}).get(lang, 0)} loc")
             lines.append("Operational readiness:")
-            for k, v in report.get('operational', {}).items():
+            for k, v in report.get("operational", {}).items():
                 lines.append(f"  {k}: {v}")
-            if report.get('warnings'):
+            if report.get("warnings"):
                 lines.append("Security / Quality warnings:")
-                for w in report.get('warnings')[:10]:
+                for w in report.get("warnings")[:10]:
                     lines.append(f"  - {w}")
 
             content = "\n".join(lines)
 
         if output:
-            output.write_text(content, encoding='utf-8')
-            click.echo(click.style(f"Report written to {output}", fg='green'))
+            output.write_text(content, encoding="utf-8")
+            click.echo(click.style(f"Report written to {output}", fg="green"))
         else:
             click.echo(content)
 
     except AnalysisError as e:
-        click.echo(click.style(f"Analysis error: {e}", fg='red'), err=True)
+        click.echo(click.style(f"Analysis error: {e}", fg="red"), err=True)
         raise click.Abort()
     except Exception as e:
-        click.echo(click.style(f"Unexpected error during analysis: {e}", fg='red'), err=True)
+        click.echo(click.style(f"Unexpected error during analysis: {e}", fg="red"), err=True)
         raise click.Abort()
 
 
 @cli.command()
 @click.option(
-    '--config',
+    "--config",
     type=click.Path(exists=True, path_type=Path),
-    default='config.yml',
-    help='Path to configuration file'
+    default="config.yml",
+    help="Path to configuration file",
 )
+@click.option("--port", type=int, default=8000, help="Port to serve on")
 @click.option(
-    '--port',
-    type=int,
-    default=8000,
-    help='Port to serve on'
-)
-@click.option(
-    '--watch/--no-watch',
-    default=True,
-    help='Watch for changes and rebuild automatically'
+    "--watch/--no-watch", default=True, help="Watch for changes and rebuild automatically"
 )
 def serve(config: Path, port: int, watch: bool):
     """
     Start a local development server.
-    
+
     Serves the built site and optionally watches for changes to rebuild automatically.
-    
+
     Example:
         ssg serve
         ssg serve --port 3000
         ssg serve --no-watch
     """
     try:
-        # Load configuration
+        env_port = os.getenv("SSG_SERVE_PORT")
+        if env_port:
+            port = int(env_port)
+        input_validation_port(port)
+        schema_validation_path(config, must_exist=True)
         site_config = ConfigLoader.load(config)
-        
+
         # Build site first
         click.echo("Building site...")
         builder = SiteBuilder(site_config)
         builder.build()
-        
+
         # Set up file watcher if enabled
         if watch:
+
             def on_change(changed_files):
                 click.echo(f"\nDetected changes in {len(changed_files)} file(s)")
                 try:
                     builder.rebuild_changed(changed_files)
-                    click.echo(click.style("✓ Rebuild complete", fg='green'))
+                    click.echo(click.style("✓ Rebuild complete", fg="green"))
                 except Exception as e:
-                    click.echo(click.style(f"✗ Rebuild failed: {e}", fg='red'))
-            
+                    click.echo(click.style(f"✗ Rebuild failed: {e}", fg="red"))
+
             watcher = FileWatcher(on_change)
             watcher.watch(site_config.content_dir)
             watcher.watch(site_config.template_dir)
             watcher.start()
-        
+
         # Start HTTP server
         handler = http.server.SimpleHTTPRequestHandler
-        
+
         class CustomHandler(handler):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, directory=str(site_config.output_dir), **kwargs)
-            
+
             def log_message(self, format, *args):
                 # Suppress request logs (or customize as needed)
                 pass
-        
+
         with socketserver.TCPServer(("", port), CustomHandler) as httpd:
-            click.echo(click.style(f"\n✓ Server running at http://localhost:{port}/", fg='green', bold=True))
+            click.echo(
+                click.style(
+                    f"\n✓ Server running at http://localhost:{port}/", fg="green", bold=True
+                )
+            )
             if watch:
                 click.echo("Watching for changes... (Press Ctrl+C to stop)")
             else:
                 click.echo("Press Ctrl+C to stop")
-            
+
             try:
                 httpd.serve_forever()
             except KeyboardInterrupt:
                 click.echo("\nStopping server...")
                 if watch:
                     watcher.stop()
-        
+
     except ConfigError as e:
-        click.echo(click.style(f"Configuration error: {e}", fg='red'), err=True)
+        click.echo(click.style(f"Configuration error: {e}", fg="red"), err=True)
         raise click.Abort()
     except Exception as e:
-        click.echo(click.style(f"Error: {e}", fg='red'), err=True)
+        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         raise click.Abort()
 
 
-if __name__ == '__main__':
+@cli.command()
+@click.option(
+    "--format",
+    "outfmt",
+    type=click.Choice(["json"], case_sensitive=False),
+    default="json",
+)
+def health(outfmt: str):
+    """Emit JSON health status for sandbox and CI probes."""
+    import json as json_lib
+
+    payload = {
+        "status": "ok",
+        "service": "ssg",
+        "classification": "cli-tool",
+        "logging_framework": LOGGING_FRAMEWORK,
+        "error_tracking": tracker.as_json(),
+        "metrics": metrics_json(),
+    }
+    click.echo(json_lib.dumps(payload, indent=2))
+
+
+if __name__ == "__main__":
     cli()
