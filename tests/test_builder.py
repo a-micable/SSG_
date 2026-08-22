@@ -8,16 +8,13 @@ from ssg.builder import SiteBuilder, Paginator, DependencyGraph
 
 
 class TestPaginator:
-    """Test cases for Paginator (includes BUG 3)."""
+    """Regression tests for Paginator page counts."""
 
     def test_paginator_basic(self):
         """Test basic pagination."""
         items = list(range(25))
         paginator = Paginator(items, per_page=10)
 
-        # BUG 3: This will fail - off-by-one error
-        # Expected: 3 pages (items 0-9, 10-19, 20-24)
-        # Actual: 4 pages (last page empty due to bug)
         assert paginator.total_pages == 3
 
         page1 = paginator.page(1)
@@ -33,11 +30,10 @@ class TestPaginator:
         assert page3[0] == 20
 
     def test_paginator_exact_division(self):
-        """Test pagination when items divide evenly (BUG 3 case)."""
+        """Exact division must not add an empty extra page."""
         items = list(range(20))
         paginator = Paginator(items, per_page=10)
 
-        # BUG 3: When evenly divisible, creates extra empty page
         assert paginator.total_pages == 2
 
         page1 = paginator.page(1)

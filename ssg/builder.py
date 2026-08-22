@@ -69,11 +69,7 @@ class DependencyGraph:
 
 
 class Paginator:
-    """
-    Handles pagination of content lists.
-
-    BUG 3 LOCATION: Off-by-one error in page count calculation.
-    """
+    """Paginates content lists with ceiling division (no empty extra pages)."""
 
     def __init__(self, items: List[any], per_page: int = 10):
         """
@@ -88,16 +84,7 @@ class Paginator:
 
     @property
     def total_pages(self) -> int:
-        """
-        Calculate total number of pages.
-
-        BUG 3: Off-by-one error when item count is exactly divisible by per_page.
-
-        Example:
-            10 items, 5 per_page
-            Expected: 2 pages
-            Actual: 3 pages (last page is empty!)
-        """
+        """Return the number of pages, using ceiling division for exact multiples."""
         if not self.items:
             return 1
         return (len(self.items) + self.per_page - 1) // self.per_page
@@ -190,7 +177,6 @@ class SiteBuilder:
             print("  No content to index")
             return
 
-        # Create paginator (BUG 3: May create extra empty page)
         paginator = Paginator(self.parsed_content, self.config.posts_per_page)
 
         print(f"  Creating {paginator.total_pages} paginated pages")
