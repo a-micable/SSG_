@@ -3,7 +3,7 @@ RSS feed generation for blog posts.
 Generates RSS 2.0 compliant feeds.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 from xml.etree.ElementTree import Element, SubElement, ElementTree
@@ -18,11 +18,7 @@ class FeedError(Exception):
 
 
 class FeedGenerator:
-    """
-    Generates RSS 2.0 feeds.
-
-    BUG 4 LOCATION: Timezone handling - dates are emitted in local time instead of UTC.
-    """
+    """Generates RSS 2.0 feeds with RFC 822 timestamps in GMT."""
 
     def __init__(self, config: SiteConfig):
         """
@@ -33,48 +29,29 @@ class FeedGenerator:
         """
         self.config = config
 
-    def _format_rfc822_date(self, date_str: str) -> str:
-        """
-        Format date as RFC 822 (RSS 2.0 requirement).
-
-        BUG 4: Uses local system timezone instead of UTC.
-        RSS spec requires dates in GMT, but this outputs local time.
-
-        Example:
-            Input: "2024-03-15"
-            Expected: "Fri, 15 Mar 2024 00:00:00 GMT"
-            Actual: "Fri, 15 Mar 2024 00:00:00 PST" (or whatever local TZ)
-
-        This causes feed validators to fail or show incorrect times.
-
-        Args:
-            date_str: Date string in ISO format
-
-        Returns:
-            RFC 822 formatted date string
-        """
-        if not isinstance(date_str, str):
-            date_str = str(date_str)
-        try:
-            # Parse ISO date
-            date = datetime.fromisoformat(date_str)
-        except (ValueError, AttributeError):
-            # Try parsing with common formats
-            for fmt in ["%Y-%m-%d", "%Y/%m/%d"]:
-                try:
-                    date = datetime.strptime(date_str, fmt)
-                    break
-                except ValueError:
-                    continue
-            else:
-                # Fallback to current time
-                date = datetime.now()
-
-        # BUG 4: Should convert to UTC before formatting
-        # Should use: date.astimezone(timezone.utc).strftime(...)
-        # Instead, uses local time:
-        return date.strftime("%a, %d %b %Y %H:%M:%S %z")
-        # This outputs local timezone offset, not GMT
+    def _format_rfc822_date(self, date_value) -> str:
+        """Format a date or datetime as RFC 822 ending in GMT."""
+        if isinstance(date_value, datetime):
+            date = date_value
+        else:
+            date_str = str(date_value)
+            try:
+                date = datetime.fromisoformat(date_str)
+            except (ValueError, AttributeError):
+                date = None
+                for fmt in ["%Y-%m-%d", "%Y/%m/%d"]:
+                    try:
+                        date = datetime.strptime(date_str, fmt)
+                        break
+                    except ValueError:
+                        continue
+                if date is None:
+                    date = datetime.now(timezone.utc)
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=timezone.utc)
+        else:
+            date = date.astimezone(timezone.utc)
+        return date.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     def _create_item_element(self, content: ParsedContent) -> Element:
         """
@@ -101,7 +78,6 @@ class FeedGenerator:
         description = SubElement(item, "description")
         description.text = content.content
 
-        # Publication date (BUG 4: Uses local time instead of UTC)
         pub_date = SubElement(item, "pubDate")
         pub_date.text = self._format_rfc822_date(content.date)
 
@@ -145,9 +121,8 @@ class FeedGenerator:
         language = SubElement(channel, "language")
         language.text = self.config.language
 
-        # Last build date (BUG 4: Also uses local time)
         last_build = SubElement(channel, "lastBuildDate")
-        last_build.text = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z")
+        last_build.text = self._format_rfc822_date(datetime.now(timezone.utc))
 
         # Add items (most recent first, limited to max_items)
         for content in content_items[:max_items]:
