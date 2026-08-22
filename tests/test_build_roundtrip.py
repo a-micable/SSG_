@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import zlib
 import subprocess
 import sys
+import zlib
 from pathlib import Path
 
 

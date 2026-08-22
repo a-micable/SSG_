@@ -3,13 +3,12 @@ RSS feed generation for blog posts.
 Generates RSS 2.0 compliant feeds.
 """
 
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import List
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+from datetime import UTC, datetime
+from xml.etree.ElementTree import Element, ElementTree, SubElement
+
 from .config import SiteConfig
-from .parser import ParsedContent
 from .logging_config import get_logger
+from .parser import ParsedContent
 
 log = get_logger("ssg.feed")
 
@@ -49,11 +48,11 @@ class FeedGenerator:
                     except ValueError:
                         continue
                 if date is None:
-                    date = datetime.now(timezone.utc)
+                    date = datetime.now(UTC)
         if date.tzinfo is None:
-            date = date.replace(tzinfo=timezone.utc)
+            date = date.replace(tzinfo=UTC)
         else:
-            date = date.astimezone(timezone.utc)
+            date = date.astimezone(UTC)
         return date.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     def _create_item_element(self, content: ParsedContent) -> Element:
@@ -96,7 +95,7 @@ class FeedGenerator:
 
         return item
 
-    def generate(self, content_items: List[ParsedContent], max_items: int = 20):
+    def generate(self, content_items: list[ParsedContent], max_items: int = 20):
         """
         Generate RSS feed for content items.
 
@@ -125,7 +124,7 @@ class FeedGenerator:
         language.text = self.config.language
 
         last_build = SubElement(channel, "lastBuildDate")
-        last_build.text = self._format_rfc822_date(datetime.now(timezone.utc))
+        last_build.text = self._format_rfc822_date(datetime.now(UTC))
 
         # Add items (most recent first, limited to max_items)
         for content in content_items[:max_items]:

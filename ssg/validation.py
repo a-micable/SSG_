@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 from .error_tracking import tracker
-
 
 INPUT_VALIDATION_PATTERNS = [
     r"^[A-Za-z0-9._/-]+$",
@@ -18,11 +18,11 @@ class ValidationError(Exception):
     """Raised when argv or config schema validation fails."""
 
 
-def input_validation_argv(argv: Optional[Sequence[str]]) -> List[str]:
+def input_validation_argv(argv: Sequence[str] | None) -> list[str]:
     """Reject missing or non-string argv fragments before Click dispatch."""
     if argv is None:
         raise ValidationError("argv is required")
-    cleaned: List[str] = []
+    cleaned: list[str] = []
     for item in argv:
         if not isinstance(item, str) or not item.strip():
             tracker.capture("invalid_argv", "empty argv token", {"token": item})
@@ -41,7 +41,7 @@ def input_validation_port(port: int) -> int:
     return port
 
 
-def schema_validation_config(data: Dict[str, Any]) -> Dict[str, Any]:
+def schema_validation_config(data: dict[str, Any]) -> dict[str, Any]:
     """Validate required keys of a loaded YAML config mapping."""
     if not isinstance(data, dict):
         raise ValidationError("config schema must be a mapping")

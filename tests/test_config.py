@@ -1,9 +1,10 @@
 """Tests for configuration loading and validation."""
 
 from pathlib import Path
+
 import pytest
-import yaml
-from ssg.config import SiteConfig, ConfigLoader, ConfigError
+
+from ssg.config import ConfigError, ConfigLoader, SiteConfig
 
 
 class TestSiteConfig:

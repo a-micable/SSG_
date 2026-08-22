@@ -2,11 +2,11 @@
 Pytest configuration and shared fixtures for testing.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
 import shutil
-from ssg.config import SiteConfig
+import tempfile
+from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture

@@ -1,6 +1,5 @@
-from pathlib import Path
-from typing import Dict, List, Tuple
 import re
+from pathlib import Path
 
 
 class Scanner:
@@ -58,13 +57,13 @@ class Scanner:
     def __init__(self, root: Path):
         self.root = Path(root)
 
-    def scan(self) -> Dict:
+    def scan(self) -> dict:
         files_by_ext = {}
         loc_by_ext = {}
-        files_by_lang: Dict[str, int] = {}
-        loc_by_lang: Dict[str, int] = {}
-        findings: List[Tuple[str, int, str]] = []
-        boilerplate_files: List[str] = []
+        files_by_lang: dict[str, int] = {}
+        loc_by_lang: dict[str, int] = {}
+        findings: list[tuple[str, int, str]] = []
+        boilerplate_files: list[str] = []
 
         for path in self.root.rglob("*"):
             if path.is_file():

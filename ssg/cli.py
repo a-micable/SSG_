@@ -4,24 +4,26 @@ Provides build, init, and serve commands.
 """
 
 import http.server
-import json
 import os
 import socketserver
 from pathlib import Path
+
 import click
-from .config import ConfigLoader, SiteConfig, ConfigError
-from .builder import SiteBuilder, BuildError
-from .watcher import FileWatcher
-from .analyzer import Analyzer, AnalysisError
-from .logging_config import LOGGING_FRAMEWORK, configure_logging, get_logger
+
+from .analyzer import AnalysisError, Analyzer
+from .builder import BuildError, SiteBuilder
+from .config import ConfigError, ConfigLoader
 from .error_tracking import tracker
-from .runtime_metrics import as_json as metrics_json, increment
+from .logging_config import LOGGING_FRAMEWORK, configure_logging, get_logger
+from .runtime_metrics import as_json as metrics_json
+from .runtime_metrics import increment
 from .validation import (
     ValidationError,
     input_validation_argv,
     input_validation_port,
     schema_validation_path,
 )
+from .watcher import FileWatcher
 
 
 @click.group()
@@ -166,7 +168,7 @@ description: A site built with SSG
 language: en
 """
         config_path.write_text(config_content, encoding="utf-8")
-        click.echo(f"  Created config.yml")
+        click.echo("  Created config.yml")
 
         # Create sample post
         sample_post = path / "content" / "posts" / "welcome.md"
@@ -206,7 +208,7 @@ This is your first post. Edit this file in `content/posts/welcome.md` to get sta
 Happy building!
 """
         sample_post.write_text(sample_content, encoding="utf-8")
-        click.echo(f"  Created sample post")
+        click.echo("  Created sample post")
 
         # Create base template
         base_template = path / "templates" / "base.html"
@@ -237,7 +239,7 @@ Happy building!
 </html>
 """
         base_template.write_text(base_content, encoding="utf-8")
-        click.echo(f"  Created base template")
+        click.echo("  Created base template")
 
         # Create post template
         post_template = path / "templates" / "post.html"
@@ -266,7 +268,7 @@ Happy building!
 {% endblock %}
 """
         post_template.write_text(post_content, encoding="utf-8")
-        click.echo(f"  Created post template")
+        click.echo("  Created post template")
 
         # Create index template
         index_template = path / "templates" / "index.html"
@@ -299,7 +301,7 @@ Happy building!
 {% endblock %}
 """
         index_template.write_text(index_content, encoding="utf-8")
-        click.echo(f"  Created index template")
+        click.echo("  Created index template")
 
         # Create tag template
         tag_template = path / "templates" / "tag.html"
@@ -320,7 +322,7 @@ Happy building!
 {% endblock %}
 """
         tag_template.write_text(tag_content, encoding="utf-8")
-        click.echo(f"  Created tag template")
+        click.echo("  Created tag template")
 
         # Create sample CSS
         css_file = path / "assets" / "css" / "style.css"
@@ -396,13 +398,13 @@ footer {
 }
 """
         css_file.write_text(css_content, encoding="utf-8")
-        click.echo(f"  Created sample CSS")
+        click.echo("  Created sample CSS")
 
         click.echo(click.style("\n✓ Site initialized successfully!", fg="green", bold=True))
-        click.echo(f"\nNext steps:")
+        click.echo("\nNext steps:")
         click.echo(f"  cd {path}")
-        click.echo(f"  ssg build")
-        click.echo(f"  ssg serve")
+        click.echo("  ssg build")
+        click.echo("  ssg serve")
 
     except Exception as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)

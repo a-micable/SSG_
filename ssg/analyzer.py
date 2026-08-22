@@ -1,12 +1,13 @@
 from pathlib import Path
-from .scanner import Scanner
+from typing import Any
+
 from .metrics import (
     languages_from_ext,
-    loc_summary,
     languages_from_lang,
+    loc_summary,
     loc_summary_from_lang,
 )
-from typing import Dict, Any
+from .scanner import Scanner
 
 
 class AnalysisError(Exception):
@@ -21,7 +22,7 @@ class Analyzer:
         if not self.root.exists():
             raise AnalysisError(f"Root path does not exist: {root}")
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         scanner = Scanner(self.root)
         scan = scanner.scan()
 

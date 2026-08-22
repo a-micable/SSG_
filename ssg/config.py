@@ -3,10 +3,10 @@ Configuration management for the SSG.
 Loads and validates site configuration from YAML files.
 """
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-import os
+
 import yaml
 
 from .validation import ValidationError, schema_validation_config
@@ -49,12 +49,12 @@ class SiteConfig:
     posts_per_page: int = 10
     date_format: str = "%Y-%m-%d"
     timezone: str = "UTC"
-    asset_dirs: List[str] = field(default_factory=lambda: ["assets", "static"])
+    asset_dirs: list[str] = field(default_factory=lambda: ["assets", "static"])
     build_drafts: bool = False
     feed_enabled: bool = True
     sitemap_enabled: bool = True
-    author: Optional[str] = None
-    description: Optional[str] = None
+    author: str | None = None
+    description: str | None = None
     language: str = "en"
 
     def __post_init__(self):
@@ -121,7 +121,7 @@ class ConfigLoader:
             raise ConfigError(f"Configuration file not found: {config_path}")
 
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 raw_config = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise ConfigError(f"Failed to parse configuration YAML: {e}")

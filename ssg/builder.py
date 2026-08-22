@@ -3,18 +3,18 @@ Site builder that orchestrates parsing, rendering, and asset processing.
 Handles incremental builds and dependency tracking.
 """
 
-from collections import defaultdict
-from pathlib import Path
-from typing import Dict, List, Set, Optional
 import re
 import shutil
+from collections import defaultdict
+from pathlib import Path
+
+from .assets import AssetProcessor
 from .config import SiteConfig
+from .feed import FeedGenerator
+from .logging_config import get_logger
 from .parser import MarkdownParser, ParsedContent
 from .renderer import Renderer
-from .assets import AssetProcessor
-from .feed import FeedGenerator
 from .sitemap import SitemapGenerator
-from .logging_config import get_logger
 
 log = get_logger("ssg.builder")
 
@@ -30,9 +30,9 @@ class DependencyGraph:
 
     def __init__(self):
         """Initialize the dependency graph."""
-        self.content_to_templates: Dict[Path, Set[Path]] = defaultdict(set)
-        self.template_to_content: Dict[Path, Set[Path]] = defaultdict(set)
-        self.template_includes: Dict[Path, Set[Path]] = defaultdict(set)
+        self.content_to_templates: dict[Path, set[Path]] = defaultdict(set)
+        self.template_to_content: dict[Path, set[Path]] = defaultdict(set)
+        self.template_includes: dict[Path, set[Path]] = defaultdict(set)
 
     def add_content_dependency(self, content_path: Path, template_path: Path):
         """Record that content depends on a template."""
@@ -43,11 +43,11 @@ class DependencyGraph:
         """Record that a template includes another template."""
         self.template_includes[parent_template].add(included_template)
 
-    def get_affected_content(self, changed_template: Path) -> Set[Path]:
+    def get_affected_content(self, changed_template: Path) -> set[Path]:
         """Return content that must rebuild when a template (or its includers) change."""
-        affected: Set[Path] = set()
+        affected: set[Path] = set()
         stack = [changed_template]
-        seen: Set[Path] = set()
+        seen: set[Path] = set()
         while stack:
             current = stack.pop()
             if current in seen:
@@ -63,7 +63,7 @@ class DependencyGraph:
 class Paginator:
     """Paginates content lists with ceiling division (no empty extra pages)."""
 
-    def __init__(self, items: List[any], per_page: int = 10):
+    def __init__(self, items: list[any], per_page: int = 10):
         """
         Initialize paginator.
 
@@ -81,7 +81,7 @@ class Paginator:
             return 1
         return (len(self.items) + self.per_page - 1) // self.per_page
 
-    def page(self, page_num: int) -> List[any]:
+    def page(self, page_num: int) -> list[any]:
         """Get items for a specific page."""
         start = (page_num - 1) * self.per_page
         end = start + self.per_page
@@ -115,7 +115,7 @@ class SiteBuilder:
         self.feed_generator = FeedGenerator(config)
         self.sitemap_generator = SitemapGenerator(config)
         self.dependency_graph = DependencyGraph()
-        self.parsed_content: List[ParsedContent] = []
+        self.parsed_content: list[ParsedContent] = []
 
     def clean(self):
         """Clean the output directory."""
@@ -161,7 +161,7 @@ class SiteBuilder:
     def _record_template_chain(self, template_path: Path) -> None:
         """Record {% extends %} parents so base-template edits rebuild child pages."""
         current = template_path
-        seen: Set[Path] = set()
+        seen: set[Path] = set()
         while current.exists() and current not in seen:
             seen.add(current)
             text = current.read_text(encoding="utf-8", errors="ignore")
@@ -234,7 +234,7 @@ class SiteBuilder:
         log.info("build_tag_pages")
 
         # Group content by tag
-        tags: Dict[str, List[ParsedContent]] = defaultdict(list)
+        tags: dict[str, list[ParsedContent]] = defaultdict(list)
         for content in self.parsed_content:
             for tag in content.tags:
                 tags[tag].append(content)
@@ -306,7 +306,7 @@ class SiteBuilder:
             extra={"ssg_extra": {"output_dir": str(self.config.output_dir)}},
         )
 
-    def rebuild_changed(self, changed_files: List[Path]):
+    def rebuild_changed(self, changed_files: list[Path]):
         """Rebuild content files affected by content or template changes."""
         content_to_rebuild = set()
 

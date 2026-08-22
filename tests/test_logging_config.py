@@ -3,11 +3,10 @@
 import json
 import logging
 from datetime import datetime
-from pathlib import Path
 
 from ssg.logging_config import (
-    LOGGING_FRAMEWORK,
     LOG_LEVEL_ENV,
+    LOGGING_FRAMEWORK,
     StructuredFormatter,
     configure_logging,
     resolve_log_level,

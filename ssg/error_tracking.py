@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 ERROR_TRACKING_BACKEND = "ssg-inprocess"
 
@@ -13,26 +13,26 @@ ERROR_TRACKING_BACKEND = "ssg-inprocess"
 class TrackedError:
     code: str
     message: str
-    context: Dict[str, Any] = field(default_factory=dict)
-    ts: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    context: dict[str, Any] = field(default_factory=dict)
+    ts: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class ErrorTracker:
     def __init__(self) -> None:
         self.backend = ERROR_TRACKING_BACKEND
-        self.events: List[TrackedError] = []
+        self.events: list[TrackedError] = []
 
     def capture(
         self,
         code: str,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> TrackedError:
         event = TrackedError(code=code, message=message, context=context or {})
         self.events.append(event)
         return event
 
-    def as_json(self) -> Dict[str, Any]:
+    def as_json(self) -> dict[str, Any]:
         return {
             "backend": self.backend,
             "count": len(self.events),

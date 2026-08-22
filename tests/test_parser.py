@@ -3,7 +3,6 @@ Tests for the Markdown parser.
 """
 
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 

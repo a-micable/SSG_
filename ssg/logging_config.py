@@ -6,8 +6,8 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 LOGGING_FRAMEWORK = "ssg-structured"
 LOG_LEVEL_ENV = "SSG_LOG_LEVEL"
@@ -26,8 +26,8 @@ class StructuredFormatter(logging.Formatter):
     """Emit one JSON object per log record."""
 
     def format(self, record: logging.LogRecord) -> str:
-        payload: Dict[str, Any] = {
-            "ts": datetime.now(timezone.utc).isoformat(),
+        payload: dict[str, Any] = {
+            "ts": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "framework": LOGGING_FRAMEWORK,
@@ -41,12 +41,12 @@ class StructuredFormatter(logging.Formatter):
         return json.dumps(payload, default=str)
 
 
-def resolve_log_level(override: Optional[str] = None) -> int:
+def resolve_log_level(override: str | None = None) -> int:
     raw = (override or os.getenv(LOG_LEVEL_ENV) or "INFO").upper()
     return _LEVELS.get(raw, logging.INFO)
 
 
-def configure_logging(level: Optional[str] = None) -> logging.Logger:
+def configure_logging(level: str | None = None) -> logging.Logger:
     """Configure the `ssg` logger from getenv / argv overrides."""
     logger = logging.getLogger("ssg")
     logger.handlers.clear()

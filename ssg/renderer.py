@@ -5,9 +5,10 @@ Handles layout inheritance, includes, and custom filters.
 
 from datetime import date as Date
 from datetime import datetime, time
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+
 from .config import SiteConfig
 from .parser import ParsedContent
 
@@ -67,7 +68,7 @@ class Renderer:
                 return date_value
         return str(date_value)
 
-    def _filter_dateformat(self, date_value: Any, format_string: Optional[str] = None) -> str:
+    def _filter_dateformat(self, date_value: Any, format_string: str | None = None) -> str:
         """
         Format a date using configured or custom format.
 
@@ -100,7 +101,7 @@ class Renderer:
         excerpt = text[:length].rsplit(" ", 1)[0]
         return excerpt + "..."
 
-    def _filter_limit(self, items: List[Any], count: int) -> List[Any]:
+    def _filter_limit(self, items: list[Any], count: int) -> list[Any]:
         """
         Limit a list to a specific number of items.
 
@@ -127,7 +128,7 @@ class Renderer:
         path = path.lstrip("/")
         return f"{base}/{path}"
 
-    def render(self, template_name: str, context: Dict[str, Any]) -> str:
+    def render(self, template_name: str, context: dict[str, Any]) -> str:
         """
         Render a template with the given context.
 
@@ -162,7 +163,7 @@ class Renderer:
             raise RenderError(f"Failed to render {template_name}: {e}")
 
     def render_content(
-        self, content: ParsedContent, extra_context: Optional[Dict[str, Any]] = None
+        self, content: ParsedContent, extra_context: dict[str, Any] | None = None
     ) -> str:
         """
         Render a ParsedContent object using its layout template.
@@ -191,8 +192,8 @@ class Renderer:
     def render_list(
         self,
         template_name: str,
-        items: List[ParsedContent],
-        extra_context: Optional[Dict[str, Any]] = None,
+        items: list[ParsedContent],
+        extra_context: dict[str, Any] | None = None,
     ) -> str:
         """
         Render a list of content items.

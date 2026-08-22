@@ -4,9 +4,8 @@ Generates sitemaps compliant with the sitemap protocol.
 """
 
 from datetime import datetime
-from pathlib import Path
-from typing import List
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+from xml.etree.ElementTree import Element, ElementTree, SubElement
+
 from .config import SiteConfig
 from .parser import ParsedContent
 
@@ -80,7 +79,7 @@ class SitemapGenerator:
 
         return url_elem
 
-    def generate(self, content_items: List[ParsedContent]):
+    def generate(self, content_items: list[ParsedContent]):
         """
         Generate XML sitemap for content items.
 

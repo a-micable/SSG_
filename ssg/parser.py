@@ -7,10 +7,10 @@ from dataclasses import dataclass, field
 from datetime import date as Date
 from datetime import datetime, time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import frontmatter
 import markdown
-from markdown.extensions import tables, fenced_code, codehilite
 
 
 class ParseError(Exception):
@@ -44,9 +44,9 @@ class ParsedContent:
     date: datetime
     slug: str
     layout: str = "default.html"
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     draft: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def url(self) -> str:
@@ -120,7 +120,7 @@ class MarkdownParser:
             raise ParseError(f"File not found: {file_path}")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 post = frontmatter.load(f)
         except Exception as e:
             raise ParseError(f"Failed to read {file_path}: {e}")
@@ -167,7 +167,7 @@ class MarkdownParser:
 
     def parse_directory(
         self, content_dir: Path, include_drafts: bool = False
-    ) -> List[ParsedContent]:
+    ) -> list[ParsedContent]:
         """
         Parse all Markdown files in a directory.
 

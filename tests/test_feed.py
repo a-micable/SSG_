@@ -1,10 +1,10 @@
 """RSS feed timezone formatting."""
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from ssg.config import SiteConfig
 from ssg.feed import FeedGenerator
-from pathlib import Path
 
 
 def _generator(tmp_path: Path) -> FeedGenerator:

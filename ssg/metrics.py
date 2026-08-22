@@ -1,5 +1,3 @@
-from typing import Dict
-
 EXT_LANGUAGE_MAP = {
     ".py": "Python",
     ".js": "JavaScript",
@@ -52,7 +50,7 @@ NORMALIZE_LANG = {
 }
 
 
-def languages_from_ext(files_by_ext: Dict[str, int]) -> Dict[str, int]:
+def languages_from_ext(files_by_ext: dict[str, int]) -> dict[str, int]:
     result = {}
     for ext, count in files_by_ext.items():
         lang = EXT_LANGUAGE_MAP.get(ext, ext.lstrip(".") or "other")
@@ -60,7 +58,7 @@ def languages_from_ext(files_by_ext: Dict[str, int]) -> Dict[str, int]:
     return result
 
 
-def loc_summary(loc_by_ext: Dict[str, int]) -> Dict[str, int]:
+def loc_summary(loc_by_ext: dict[str, int]) -> dict[str, int]:
     result = {}
     for ext, loc in loc_by_ext.items():
         lang = EXT_LANGUAGE_MAP.get(ext, ext.lstrip(".") or "other")
@@ -75,16 +73,16 @@ def normalize_language_key(key: str) -> str:
     return NORMALIZE_LANG.get(k, key.title())
 
 
-def languages_from_lang(files_by_lang: Dict[str, int]) -> Dict[str, int]:
-    result: Dict[str, int] = {}
+def languages_from_lang(files_by_lang: dict[str, int]) -> dict[str, int]:
+    result: dict[str, int] = {}
     for key, count in files_by_lang.items():
         lang = normalize_language_key(key)
         result[lang] = result.get(lang, 0) + count
     return result
 
 
-def loc_summary_from_lang(loc_by_lang: Dict[str, int]) -> Dict[str, int]:
-    result: Dict[str, int] = {}
+def loc_summary_from_lang(loc_by_lang: dict[str, int]) -> dict[str, int]:
+    result: dict[str, int] = {}
     for key, loc in loc_by_lang.items():
         lang = normalize_language_key(key)
         result[lang] = result.get(lang, 0) + loc

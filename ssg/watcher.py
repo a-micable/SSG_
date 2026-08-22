@@ -4,10 +4,11 @@ Automatically rebuilds site when content or templates change.
 """
 
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List, Set
+
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
 
 class WatcherError(Exception):
@@ -21,7 +22,7 @@ class ChangeHandler(FileSystemEventHandler):
     Handles file system change events.
     """
 
-    def __init__(self, callback: Callable[[List[Path]], None], debounce_seconds: float = 0.5):
+    def __init__(self, callback: Callable[[list[Path]], None], debounce_seconds: float = 0.5):
         """
         Initialize the change handler.
 
@@ -32,7 +33,7 @@ class ChangeHandler(FileSystemEventHandler):
         super().__init__()
         self.callback = callback
         self.debounce_seconds = debounce_seconds
-        self.changed_files: Set[Path] = set()
+        self.changed_files: set[Path] = set()
         self.last_trigger = 0.0
 
     def on_any_event(self, event: FileSystemEvent):
@@ -102,7 +103,7 @@ class FileWatcher:
     Watches directories for file changes and triggers rebuilds.
     """
 
-    def __init__(self, callback: Callable[[List[Path]], None]):
+    def __init__(self, callback: Callable[[list[Path]], None]):
         """
         Initialize the file watcher.
 
@@ -111,7 +112,7 @@ class FileWatcher:
         """
         self.callback = callback
         self.observer = Observer()
-        self.watched_paths: Set[Path] = set()
+        self.watched_paths: set[Path] = set()
 
     def watch(self, path: Path, recursive: bool = True):
         """

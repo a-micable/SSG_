@@ -7,7 +7,7 @@ import hashlib
 import re
 import shutil
 from pathlib import Path
-from typing import Dict, Set
+
 from .config import SiteConfig
 from .logging_config import get_logger
 
@@ -31,7 +31,7 @@ class AssetProcessor:
             config: Site configuration
         """
         self.config = config
-        self.fingerprint_map: Dict[str, str] = {}
+        self.fingerprint_map: dict[str, str] = {}
 
     def _compute_hash(self, file_path: Path) -> str:
         """

@@ -2,9 +2,9 @@
 Tests for the site builder.
 """
 
-import pytest
 from pathlib import Path
-from ssg.builder import SiteBuilder, Paginator, DependencyGraph
+
+from ssg.builder import DependencyGraph, Paginator, SiteBuilder
 
 
 class TestPaginator:

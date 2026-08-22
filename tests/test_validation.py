@@ -1,7 +1,10 @@
 """Behavioral tests: malformed argv and Result-style validation failures."""
 
+from pathlib import Path
+
 import pytest
 
+from ssg.error_tracking import tracker
 from ssg.validation import (
     ValidationError,
     input_validation_argv,
@@ -9,8 +12,6 @@ from ssg.validation import (
     schema_validation_config,
     schema_validation_path,
 )
-from ssg.error_tracking import tracker
-from pathlib import Path
 
 
 def test_input_validation_patterns_defined():

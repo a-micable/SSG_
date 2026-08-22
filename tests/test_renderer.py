@@ -2,11 +2,12 @@
 Tests for the template renderer.
 """
 
-import pytest
 from datetime import datetime
-from pathlib import Path
-from ssg.renderer import Renderer, RenderError
+
+import pytest
+
 from ssg.parser import ParsedContent
+from ssg.renderer import Renderer, RenderError
 
 
 class TestRenderer:

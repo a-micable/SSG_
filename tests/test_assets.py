@@ -2,8 +2,8 @@
 Tests for asset processing.
 """
 
-import pytest
 from pathlib import Path
+
 from ssg.assets import AssetProcessor
 
 
