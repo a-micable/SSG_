@@ -8,6 +8,12 @@ from typing import Any, Dict, List, Optional, Sequence
 from .error_tracking import tracker
 
 
+INPUT_VALIDATION_PATTERNS = [
+    r"^[A-Za-z0-9._/-]+$",
+    r"^https?://",
+]
+
+
 class ValidationError(Exception):
     """Raised when argv or config schema validation fails."""
 

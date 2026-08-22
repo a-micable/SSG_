@@ -13,6 +13,13 @@ from ssg.error_tracking import tracker
 from pathlib import Path
 
 
+def test_input_validation_patterns_defined():
+    from ssg.validation import INPUT_VALIDATION_PATTERNS
+
+    assert INPUT_VALIDATION_PATTERNS
+    assert any("https?" in p for p in INPUT_VALIDATION_PATTERNS)
+
+
 def test_input_validation_argv_rejects_empty():
     tracker.events.clear()
     with pytest.raises(ValidationError):
