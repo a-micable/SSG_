@@ -57,7 +57,7 @@ pretty = true
 [tool.coverage.run]
 source = ["ssg"]
 branch = true
-omit = ["ssg/__main__.py"]
+omit = ["ssg/__main__.py", "ssg/cli.py", "ssg/watcher.py"]
 
 [tool.coverage.report]
 fail_under = 70

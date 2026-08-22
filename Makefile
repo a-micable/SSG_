@@ -32,10 +32,7 @@ coverage:
 	@$(PYTHON) -c "import xml.etree.ElementTree as E; r=E.parse('coverage/coverage.xml').getroot(); print('LINE_COVERAGE_PCT', round(float(r.attrib['line-rate'])*100, 2))"
 
 lock-check:
-	@tmpdir=$$(mktemp -d); \
-	$(PIP_COMPILE) --generate-hashes --allow-unsafe --output-file $$tmpdir/requirements-ci.txt requirements.in; \
-	diff -u ci/requirements-ci.txt $$tmpdir/requirements-ci.txt; \
-	status=$$?; rm -rf $$tmpdir; exit $$status
+	$(PYTHON) ci/lock_check.py
 
 audit:
 	$(PYTHON) -m pip_audit -r requirements.txt
