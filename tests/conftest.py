@@ -21,7 +21,7 @@ def temp_dir():
 def sample_site(temp_dir):
     """
     Create a complete sample site structure for testing.
-    
+
     Returns a dictionary with paths to:
     - root: Site root directory
     - content: Content directory
@@ -34,12 +34,12 @@ def sample_site(temp_dir):
     template_dir = temp_dir / "templates"
     output_dir = temp_dir / "dist"
     assets_dir = temp_dir / "assets"
-    
+
     content_dir.mkdir()
     template_dir.mkdir()
     (content_dir / "posts").mkdir()
     (assets_dir / "css").mkdir(parents=True)
-    
+
     # Create sample content files
     post1 = content_dir / "posts" / "first-post.md"
     post1.write_text("""---
@@ -60,7 +60,7 @@ This is the first post content.
 
 More content here.
 """)
-    
+
     post2 = content_dir / "posts" / "second-post.md"
     post2.write_text("""---
 title: Second Post
@@ -76,7 +76,7 @@ draft: false
 
 This is the second post.
 """)
-    
+
     draft_post = content_dir / "posts" / "draft.md"
     draft_post.write_text("""---
 title: Draft Post
@@ -88,20 +88,20 @@ draft: true
 
 This is a draft.
 """)
-    
+
     # Create sample templates
     base_template = template_dir / "base.html"
     base_template.write_text("""<!DOCTYPE html>
 <html>
 <head>
-    <title>{% block title %}{{ site.name }}{% endblock %}</title>
+    <title>{% block title %}{{ title | default(site.name) }}{% endblock %}</title>
 </head>
 <body>
     {% block content %}{% endblock %}
 </body>
 </html>
 """)
-    
+
     post_template = template_dir / "post.html"
     post_template.write_text("""{% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
@@ -113,7 +113,7 @@ This is a draft.
 </article>
 {% endblock %}
 """)
-    
+
     index_template = template_dir / "index.html"
     index_template.write_text("""{% extends "base.html" %}
 {% block content %}
@@ -126,7 +126,7 @@ This is a draft.
 {% endfor %}
 {% endblock %}
 """)
-    
+
     tag_template = template_dir / "tag.html"
     tag_template.write_text("""{% extends "base.html" %}
 {% block content %}
@@ -136,11 +136,11 @@ This is a draft.
 {% endfor %}
 {% endblock %}
 """)
-    
+
     # Create sample assets
     css_file = assets_dir / "css" / "style.css"
     css_file.write_text("""body { margin: 0; }""")
-    
+
     # Create config file
     config_file = temp_dir / "config.yml"
     config_file.write_text(f"""site_name: Test Site
@@ -152,14 +152,14 @@ posts_per_page: 5
 asset_dirs:
   - {assets_dir}
 """)
-    
+
     return {
-        'root': temp_dir,
-        'content': content_dir,
-        'templates': template_dir,
-        'output': output_dir,
-        'assets': assets_dir,
-        'config': config_file,
+        "root": temp_dir,
+        "content": content_dir,
+        "templates": template_dir,
+        "output": output_dir,
+        "assets": assets_dir,
+        "config": config_file,
     }
 
 
@@ -167,4 +167,5 @@ asset_dirs:
 def sample_config(sample_site):
     """Load configuration from sample site."""
     from ssg.config import ConfigLoader
-    return ConfigLoader.load(sample_site['config'])
+
+    return ConfigLoader.load(sample_site["config"])

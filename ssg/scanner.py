@@ -19,7 +19,14 @@ class Scanner:
 
     # directories to ignore as boilerplate/vendor/generated
     BOILERPLATE_DIRS = {
-        'node_modules', '__pycache__', '.venv', 'venv', 'dist', 'build', 'platform/generated', 'platform/frontend/node_modules'
+        "node_modules",
+        "__pycache__",
+        ".venv",
+        "venv",
+        "dist",
+        "build",
+        "platform/generated",
+        "platform/frontend/node_modules",
     }
 
     # file content patterns that indicate generated or boilerplate files
@@ -33,20 +40,21 @@ class Scanner:
     # small heuristics to detect language from content when extension is missing or ambiguous
     @staticmethod
     def detect_language_from_content(text: str, ext: str) -> str:
-        if ext == '.py' or text.lstrip().startswith('#!') and 'python' in text[:200].lower():
-            return 'python'
+        if ext == ".py" or text.lstrip().startswith("#!") and "python" in text[:200].lower():
+            return "python"
         low = text.lower()
-        if '<?php' in low:
-            return 'php'
-        if 'import ' in low and 'def ' in low and (ext == '.py' or ext == ''):
-            return 'python'
-        if 'function ' in low or 'const ' in low or 'require(' in low or 'module.exports' in low:
-            return 'javascript'
-        if '#include' in low or 'int main(' in low:
-            return 'c/c++'
-        if 'package ' in low and 'func ' in low:
-            return 'go'
-        return ''
+        if "<?php" in low:
+            return "php"
+        if "import " in low and "def " in low and (ext == ".py" or ext == ""):
+            return "python"
+        if "function " in low or "const " in low or "require(" in low or "module.exports" in low:
+            return "javascript"
+        if "#include" in low or "int main(" in low:
+            return "c/c++"
+        if "package " in low and "func " in low:
+            return "go"
+        return ""
+
     def __init__(self, root: Path):
         self.root = Path(root)
 
@@ -58,7 +66,7 @@ class Scanner:
         findings: List[Tuple[str, int, str]] = []
         boilerplate_files: List[str] = []
 
-        for path in self.root.rglob('*'):
+        for path in self.root.rglob("*"):
             if path.is_file():
                 try:
                     # skip common vendor/generated directories
@@ -67,10 +75,10 @@ class Scanner:
                         boilerplate_files.append(str(path.relative_to(self.root)))
                         continue
 
-                    ext = path.suffix.lower() or ''
+                    ext = path.suffix.lower() or ""
 
                     # attempt to read text files for LOC and patterns
-                    text = path.read_text(encoding='utf-8', errors='ignore')
+                    text = path.read_text(encoding="utf-8", errors="ignore")
 
                     # detect boilerplate by content
                     for pat in self.BOILERPLATE_CONTENT_PATTERNS:
@@ -84,7 +92,7 @@ class Scanner:
 
                     # language detection fallback
                     content_lang = self.detect_language_from_content(text, ext)
-                    lang_key = content_lang or ext.lstrip('.') or 'other'
+                    lang_key = content_lang or ext.lstrip(".") or "other"
                     files_by_lang[lang_key] = files_by_lang.get(lang_key, 0) + 1
                     loc_by_lang[lang_key] = loc_by_lang.get(lang_key, 0) + len(lines)
 
@@ -100,14 +108,14 @@ class Scanner:
                     continue
                 except Exception:
                     # binary or unreadable file: count it but skip content
-                    ext = path.suffix.lower() or 'noext'
+                    ext = path.suffix.lower() or "noext"
                     files_by_ext[ext] = files_by_ext.get(ext, 0) + 0
 
         return {
-            'files_by_ext': files_by_ext,
-            'loc_by_ext': loc_by_ext,
-            'files_by_lang': files_by_lang,
-            'loc_by_lang': loc_by_lang,
-            'findings': findings,
-            'boilerplate_files': boilerplate_files,
+            "files_by_ext": files_by_ext,
+            "loc_by_ext": loc_by_ext,
+            "files_by_lang": files_by_lang,
+            "loc_by_lang": loc_by_lang,
+            "findings": findings,
+            "boilerplate_files": boilerplate_files,
         }
