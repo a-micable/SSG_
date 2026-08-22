@@ -9,6 +9,9 @@ from typing import List
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 from .config import SiteConfig
 from .parser import ParsedContent
+from .logging_config import get_logger
+
+log = get_logger("ssg.feed")
 
 
 class FeedError(Exception):
@@ -139,7 +142,10 @@ class FeedGenerator:
 
         tree.write(output_path, encoding="utf-8", xml_declaration=True, method="xml")
 
-        print(f"  Generated RSS feed with {len(channel.findall('item'))} items")
+        log.info(
+            "feed_generated",
+            extra={"ssg_extra": {"items": len(channel.findall("item"))}},
+        )
 
     def _indent(self, elem: Element, level: int = 0):
         """

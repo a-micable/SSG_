@@ -14,6 +14,9 @@ from .renderer import Renderer
 from .assets import AssetProcessor
 from .feed import FeedGenerator
 from .sitemap import SitemapGenerator
+from .logging_config import get_logger
+
+log = get_logger("ssg.builder")
 
 
 class BuildError(Exception):
@@ -122,11 +125,17 @@ class SiteBuilder:
 
     def parse_content(self):
         """Parse all content files."""
-        print(f"Parsing content from {self.config.content_dir}...")
+        log.info(
+            "parse_content",
+            extra={"ssg_extra": {"content_dir": str(self.config.content_dir)}},
+        )
         self.parsed_content = self.parser.parse_directory(
             self.config.content_dir, include_drafts=self.config.build_drafts
         )
-        print(f"  Found {len(self.parsed_content)} content files")
+        log.info(
+            "content_found",
+            extra={"ssg_extra": {"count": len(self.parsed_content)}},
+        )
 
     def build_single_page(self, content: ParsedContent, output_path: Path):
         """
@@ -165,26 +174,35 @@ class SiteBuilder:
 
     def build_content_pages(self):
         """Build individual content pages."""
-        print(f"Building {len(self.parsed_content)} pages...")
+        log.info(
+            "build_content_pages",
+            extra={"ssg_extra": {"count": len(self.parsed_content)}},
+        )
 
         for content in self.parsed_content:
             # Determine output path
             output_path = self.config.output_dir / content.slug / "index.html"
             self.build_single_page(content, output_path)
 
-        print(f"  Built {len(self.parsed_content)} pages")
+        log.info(
+            "pages_built",
+            extra={"ssg_extra": {"count": len(self.parsed_content)}},
+        )
 
     def build_index_pages(self):
         """Build index and paginated list pages."""
-        print("Building index pages...")
+        log.info("build_index_pages")
 
         if not self.parsed_content:
-            print("  No content to index")
+            log.info("no_index_content")
             return
 
         paginator = Paginator(self.parsed_content, self.config.posts_per_page)
 
-        print(f"  Creating {paginator.total_pages} paginated pages")
+        log.info(
+            "paginated_pages",
+            extra={"ssg_extra": {"pages": paginator.total_pages}},
+        )
 
         for page_num in range(1, paginator.total_pages + 1):
             items = paginator.page(page_num)
@@ -213,7 +231,7 @@ class SiteBuilder:
 
     def build_tag_pages(self):
         """Build tag archive pages."""
-        print("Building tag pages...")
+        log.info("build_tag_pages")
 
         # Group content by tag
         tags: Dict[str, List[ParsedContent]] = defaultdict(list)
@@ -221,7 +239,7 @@ class SiteBuilder:
             for tag in content.tags:
                 tags[tag].append(content)
 
-        print(f"  Found {len(tags)} tags")
+        log.info("tags_found", extra={"ssg_extra": {"count": len(tags)}})
 
         # Build page for each tag
         for tag, items in tags.items():
@@ -235,25 +253,25 @@ class SiteBuilder:
 
     def build_assets(self):
         """Process and copy assets."""
-        print("Processing assets...")
+        log.info("processing_assets")
         self.asset_processor.process()
 
     def build_feed(self):
         """Generate RSS feed."""
         if not self.config.feed_enabled:
-            print("Feed generation disabled")
+            log.info("feed_disabled")
             return
 
-        print("Generating RSS feed...")
+        log.info("generating_feed")
         self.feed_generator.generate(self.parsed_content)
 
     def build_sitemap(self):
         """Generate XML sitemap."""
         if not self.config.sitemap_enabled:
-            print("Sitemap generation disabled")
+            log.info("sitemap_disabled")
             return
 
-        print("Generating sitemap...")
+        log.info("generating_sitemap")
         self.sitemap_generator.generate(self.parsed_content)
 
     def build(self, clean: bool = True):
@@ -263,9 +281,7 @@ class SiteBuilder:
         Args:
             clean: Whether to clean output directory first
         """
-        print("=" * 70)
-        print("Starting site build")
-        print("=" * 70)
+        log.info("build_start")
 
         if clean:
             self.clean()
@@ -285,9 +301,10 @@ class SiteBuilder:
         self.build_feed()
         self.build_sitemap()
 
-        print("=" * 70)
-        print(f"Build complete! Output: {self.config.output_dir}")
-        print("=" * 70)
+        log.info(
+            "build_complete",
+            extra={"ssg_extra": {"output_dir": str(self.config.output_dir)}},
+        )
 
     def rebuild_changed(self, changed_files: List[Path]):
         """Rebuild content files affected by content or template changes."""
@@ -303,7 +320,10 @@ class SiteBuilder:
                 content_to_rebuild.update(affected)
 
         if content_to_rebuild:
-            print(f"Rebuilding {len(content_to_rebuild)} affected files...")
+            log.info(
+                "rebuild_changed",
+                extra={"ssg_extra": {"count": len(content_to_rebuild)}},
+            )
             # Rebuild affected content
             for content_path in content_to_rebuild:
                 try:
@@ -311,4 +331,7 @@ class SiteBuilder:
                     output_path = self.config.output_dir / content.slug / "index.html"
                     self.build_single_page(content, output_path)
                 except Exception as e:
-                    print(f"  Error rebuilding {content_path}: {e}")
+                    log.error(
+                        "rebuild_error",
+                        extra={"ssg_extra": {"path": str(content_path), "error": str(e)}},
+                    )

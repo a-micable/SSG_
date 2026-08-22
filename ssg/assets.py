@@ -9,6 +9,9 @@ import shutil
 from pathlib import Path
 from typing import Dict, Set
 from .config import SiteConfig
+from .logging_config import get_logger
+
+log = get_logger("ssg.assets")
 
 
 class AssetError(Exception):
@@ -121,7 +124,10 @@ class AssetProcessor:
         """
         asset_dir = Path(asset_dir)
         if not asset_dir.exists():
-            print(f"  Warning: Asset directory not found: {asset_dir}")
+            log.warning(
+                "asset_dir_missing",
+                extra={"ssg_extra": {"asset_dir": str(asset_dir)}},
+            )
             return
 
         processed_count = 0
@@ -131,7 +137,10 @@ class AssetProcessor:
                 self.process_file(file_path, asset_dir)
                 processed_count += 1
 
-        print(f"  Processed {processed_count} files from {asset_dir.name}")
+        log.info(
+            "process_directory",
+            extra={"ssg_extra": {"dir": asset_dir.name, "count": processed_count}},
+        )
 
     def process(self):
         """Copy configured asset directories and record fingerprint mappings."""
@@ -144,7 +153,10 @@ class AssetProcessor:
             self.process_directory(asset_dir)
 
         if self.fingerprint_map:
-            print(f"  Generated {len(self.fingerprint_map)} fingerprinted assets")
+            log.info(
+                "fingerprints_generated",
+                extra={"ssg_extra": {"count": len(self.fingerprint_map)}},
+            )
 
     def rewrite_asset_urls(self, html: str, page_depth: int = 0) -> str:
         """Rewrite absolute and relative asset href/src to fingerprinted URLs."""
