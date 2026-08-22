@@ -3,7 +3,8 @@ Template rendering using Jinja2.
 Handles layout inheritance, includes, and custom filters.
 """
 
-from datetime import datetime
+from datetime import date as Date
+from datetime import datetime, time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
@@ -18,19 +19,7 @@ class RenderError(Exception):
 
 
 class Renderer:
-    """
-    Jinja2-based template renderer with custom filters.
-
-    This is where BUG 1 symptoms appear:
-    When templates try to use date filters like strftime on ParsedContent.date,
-    they fail because date is a string, not a datetime object.
-
-    Example template code that triggers the bug:
-        {{ post.date | strftime('%B %d, %Y') }}
-
-    Error:
-        TypeError: descriptor 'strftime' for 'datetime.date' objects doesn't apply to 'str'
-    """
+    """Jinja2-based template renderer with custom filters including strftime."""
 
     def __init__(self, config: SiteConfig):
         """
@@ -60,37 +49,22 @@ class Renderer:
         self.env.globals["url_for"] = self._url_for
 
     def _filter_strftime(self, date_value: Any, format_string: str) -> str:
-        """
-        Custom strftime filter.
-
-        BUG 1 SYMPTOM: This fails when date_value is a string.
-        The parser stores dates as strings, but templates expect datetime objects.
-
-        Args:
-            date_value: Date to format (should be datetime, but gets string)
-            format_string: strftime format string
-
-        Returns:
-            Formatted date string
-        """
-        if isinstance(date_value, str):
-            # Try to parse string to datetime
-            try:
-                date_value = datetime.fromisoformat(date_value)
-            except (ValueError, AttributeError):
-                # Try common date formats
-                for fmt in ["%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y"]:
-                    try:
-                        date_value = datetime.strptime(date_value, fmt)
-                        break
-                    except ValueError:
-                        continue
-                else:
-                    return date_value  # Return as-is if parsing fails
-
+        """Format datetime, date, or ISO string values with strftime."""
         if isinstance(date_value, datetime):
             return date_value.strftime(format_string)
-
+        if isinstance(date_value, Date):
+            return datetime.combine(date_value, time.min).strftime(format_string)
+        if isinstance(date_value, str):
+            try:
+                date_value = datetime.fromisoformat(date_value)
+                return date_value.strftime(format_string)
+            except (ValueError, AttributeError):
+                for fmt in ["%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y"]:
+                    try:
+                        return datetime.strptime(date_value, fmt).strftime(format_string)
+                    except ValueError:
+                        continue
+                return date_value
         return str(date_value)
 
     def _filter_dateformat(self, date_value: Any, format_string: Optional[str] = None) -> str:
@@ -203,7 +177,7 @@ class Renderer:
         context = {
             "content": content.content,
             "title": content.title,
-            "date": content.date,  # BUG 1: This is a string, not datetime
+            "date": content.date,
             "tags": content.tags,
             "url": content.url,
             **content.metadata,

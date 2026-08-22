@@ -2,8 +2,11 @@
 Tests for the Markdown parser.
 """
 
-import pytest
+from datetime import datetime
 from pathlib import Path
+
+import pytest
+
 from ssg.parser import MarkdownParser, ParsedContent, ParseError, extract_excerpt
 
 
@@ -33,7 +36,8 @@ This is **bold** and this is *italic*.
 
         assert isinstance(result, ParsedContent)
         assert result.title == "Test Post"
-        assert result.date == "2024-03-15"
+        assert isinstance(result.date, datetime)
+        assert result.date == datetime(2024, 3, 15)
         assert result.slug == "test-post"
         assert result.tags == ["testing", "python"]
         assert "<h1" in result.content and "Hello World" in result.content

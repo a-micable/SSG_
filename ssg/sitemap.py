@@ -31,24 +31,20 @@ class SitemapGenerator:
         """
         self.config = config
 
-    def _format_w3c_date(self, date_str: str) -> str:
-        """
-        Format date as W3C datetime (sitemap requirement).
-
-        Args:
-            date_str: Date string in ISO format
-
-        Returns:
-            W3C formatted date string (YYYY-MM-DD)
-        """
+    def _format_w3c_date(self, date_value) -> str:
+        """Format date or datetime as W3C YYYY-MM-DD."""
+        if isinstance(date_value, datetime):
+            return date_value.strftime("%Y-%m-%d")
+        if not isinstance(date_value, str):
+            date_value = str(date_value)
         try:
-            date = datetime.fromisoformat(date_str)
+            date = datetime.fromisoformat(date_value)
             return date.strftime("%Y-%m-%d")
         except (ValueError, AttributeError):
             # Try parsing with common formats
             for fmt in ["%Y-%m-%d", "%Y/%m/%d"]:
                 try:
-                    date = datetime.strptime(date_str, fmt)
+                    date = datetime.strptime(date_value, fmt)
                     return date.strftime("%Y-%m-%d")
                 except ValueError:
                     continue

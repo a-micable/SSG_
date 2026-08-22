@@ -89,7 +89,8 @@ class TestRenderer:
         """Test the strftime custom filter."""
         renderer = Renderer(sample_config)
 
-        # Test with string date (BUG 1: parser stores dates as strings)
+        result = renderer._filter_strftime(datetime(2024, 3, 15), "%B %d, %Y")
+        assert result == "March 15, 2024"
         result = renderer._filter_strftime("2024-03-15", "%B %d, %Y")
         assert result == "March 15, 2024"
 

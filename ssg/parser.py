@@ -5,7 +5,7 @@ Handles extraction of metadata and conversion to HTML.
 
 from dataclasses import dataclass, field
 from datetime import date as Date
-from datetime import datetime
+from datetime import datetime, time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import frontmatter
@@ -29,7 +29,7 @@ class ParsedContent:
         title: Content title from frontmatter
         content: Rendered HTML content
         raw_content: Original Markdown content
-        date: Publication date (BUG 1: stored as string instead of datetime)
+        date: Publication datetime parsed from frontmatter
         slug: URL slug
         layout: Template layout to use
         tags: List of tags
@@ -41,7 +41,7 @@ class ParsedContent:
     title: str
     content: str
     raw_content: str
-    date: str  # BUG 1: Should be datetime, but stored as string
+    date: datetime
     slug: str
     layout: str = "default.html"
     tags: List[str] = field(default_factory=list)
@@ -61,17 +61,28 @@ class ParsedContent:
         return self.draft
 
 
+def coerce_datetime(value: Any, fallback: datetime) -> datetime:
+    """Normalize frontmatter dates to timezone-naive datetime."""
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=None) if value.tzinfo else value
+    if isinstance(value, Date):
+        return datetime.combine(value, time.min)
+    if isinstance(value, str) and value.strip():
+        raw = value.strip()
+        try:
+            parsed = datetime.fromisoformat(raw)
+            return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
+        except ValueError:
+            for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y"):
+                try:
+                    return datetime.strptime(raw, fmt)
+                except ValueError:
+                    continue
+    return fallback
+
+
 class MarkdownParser:
-    """
-    Parses Markdown files with YAML frontmatter.
-
-    BUG 1 LOCATION: Date parsing stores dates as strings instead of datetime objects.
-    This causes template rendering errors when using date filters like strftime.
-
-    Example error:
-        {{ post.date | strftime('%B %d') }}
-        TypeError: descriptor 'strftime' for 'datetime.date' objects doesn't apply to 'str'
-    """
+    """Parses Markdown files with YAML frontmatter into datetime-typed content."""
 
     def __init__(self):
         """Initialize the Markdown parser with extensions."""
@@ -123,17 +134,8 @@ class MarkdownParser:
         if not title:
             raise ParseError(f"Missing required field 'title' in {file_path}")
 
-        # BUG 1: Date is stored as string instead of datetime
-        # This causes issues when templates try to format dates
-        date = metadata.get("date", "")
-        if isinstance(date, datetime):
-            date = date.strftime("%Y-%m-%d")
-        elif isinstance(date, Date):
-            date = date.isoformat()
-        elif date:
-            date = str(date)
-        else:
-            date = datetime.fromtimestamp(file_path.stat().st_mtime).strftime("%Y-%m-%d")
+        fallback = datetime.fromtimestamp(file_path.stat().st_mtime)
+        date = coerce_datetime(metadata.get("date"), fallback)
 
         # Optional fields
         slug = metadata.get("slug", file_path.stem)
@@ -155,7 +157,7 @@ class MarkdownParser:
             title=title,
             content=html_content,
             raw_content=raw_content,
-            date=date,  # BUG 1: String instead of datetime
+            date=date,
             slug=slug,
             layout=layout,
             tags=tags,
@@ -197,9 +199,6 @@ class MarkdownParser:
                         print(f"Warning: {e}")
                         continue
 
-        # Sort by date (newest first)
-        # BUG 1 IMPACT: String comparison instead of datetime comparison
-        # Works for ISO format dates but fails for other formats
         parsed_items.sort(key=lambda x: x.date, reverse=True)
 
         return parsed_items
