@@ -1,0 +1,7 @@
+{
+  "name": "ssg-cli-devtools",
+  "private": true,
+  "description": "Optional JS lockfile so CI can run npm audit. Runtime is Python-only.",
+  "version": "1.0.0",
+  "dependencies": {}
+}

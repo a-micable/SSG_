@@ -1,6 +1,8 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
@@ -8,13 +10,80 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Install deps
+          python-version: "3.12"
+      - name: Install hashed CI deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r platform/backend/requirements.txt
-          pip install -r requirements.txt
+          pip install --require-hashes -r ci/requirements-ci.txt
+          pip install -e .
       - name: Run tests
+        run: make test
+      - name: pytest (explicit detector entrypoint)
         run: pytest -q
+      - name: Coverage gate
+        run: |
+          make coverage
+          python -c "import xml.etree.ElementTree as E; r=E.parse('coverage/coverage.xml').getroot(); pct=float(r.attrib['line-rate'])*100; print(f'LINE_COVERAGE_PCT {pct:.2f}'); raise SystemExit(0 if pct >= 70 else 1)"
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install hashed CI deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes -r ci/requirements-ci.txt
+          pip install -e .
+      - name: Run coverage with fail-under 70
+        run: |
+          mkdir -p coverage
+          pytest -q --cov=ssg --cov-report=term --cov-report=html:coverage --cov-report=xml:coverage/coverage.xml --cov-fail-under=70 | tee coverage/summary.txt
+          python -c "import xml.etree.ElementTree as E; r=E.parse('coverage/coverage.xml').getroot(); print('LINE_COVERAGE_PCT', round(float(r.attrib['line-rate'])*100, 2))"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install hashed CI deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes -r ci/requirements-ci.txt
+          pip install -e .
+      - name: Formatter fail-on-diff
+        run: python -m ruff format --check --diff ssg tests
+      - name: Ruff lint
+        run: python -m ruff check ssg tests
+      - name: Lockfile check
+        run: make lock-check
+      - name: pip-audit
+        run: python -m pip_audit -r requirements.txt
+      - name: npm audit
+        run: |
+          npm install --package-lock-only
+          npm audit --audit-level=high
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install hashed CI deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes -r ci/requirements-ci.txt
+          pip install -e .
+      - name: mypy
+        run: make typecheck

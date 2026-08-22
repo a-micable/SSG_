@@ -1,50 +1,18 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
-
-# Virtual environments
-venv/
-env/
-.venv
-
-# Testing
-.pytest_cache/
+.git
+.github
+.pytest_cache
+.mypy_cache
+.ruff_cache
 .coverage
-htmlcov/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Git
-.git/
-.gitignore
-
-# Demo and test output
-demo-site/
-*.log
-
-# Documentation build artifacts
-docs/_build/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.bak
-*~
-
-# Scripts
-gen_commits.py
-create_commit_history.py
-generate_history.sh
+coverage
+__pycache__
+*.pyc
+.venv
+venv
+platform
+tools
+node_modules
+docs
+tests
+*.md
+!README.md

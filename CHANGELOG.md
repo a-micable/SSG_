@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `PROJECT_TYPE` (`cli-tool`) and classification docs; optional Docker Compose CLI sandbox (no databases, not IaC).
+- Structured logging (`LOGGING_FRAMEWORK`), in-process error tracking, runtime metrics, and `ssg health` JSON.
+- Named `input_validation_*` / `schema_validation_*` helpers wired into config load and the CLI.
+- Behavioral pytest modules that shell out to `ssg init` / `ssg build` and compare two dist trees.
+- CI jobs `test`, `lint`, `typecheck`, `coverage` with a 70% line-coverage gate and hashed `ci/requirements-ci.txt`.
+
+### Fixed
+- Frontmatter `datetime.date` values are normalized to ISO strings before RSS generation.
+- Paginator page count no longer adds an extra empty page when items divide evenly.
+- Asset directories from YAML strings are coerced to `Path` before processing.
+
 ### Known Issues
 - Date parsing stores dates as strings (BUG 1)
 - Template dependency tracking incomplete (BUG 2)

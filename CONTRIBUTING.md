@@ -335,6 +335,13 @@ the calculation in Paginator.total_pages.
 Fixes #123
 ```
 
+## Review and merge (multi-person maintenance)
+
+1. Open a pull request against `main` with a focused change (feature or fix plus tests and a CHANGELOG bullet).
+2. At least one other maintainer reviews behavior, tests, and docs.
+3. CI jobs `test`, `lint`, `typecheck`, and `coverage` must be green.
+4. A maintainer squash- or merge-commits after approval. Do not push generated history or lockfile-bypass commits.
+
 ## Pull Request Process
 
 ### 1. Update Your Branch

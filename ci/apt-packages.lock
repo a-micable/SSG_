@@ -1,0 +1,5 @@
+# Pinned apt packages for isolated CI / sandbox images (Ubuntu).
+# Format: package=version
+# ci/install-apt.sh installs these before Python tooling.
+ca-certificates=20240203
+git=1:2.43.0-1ubuntu7.3

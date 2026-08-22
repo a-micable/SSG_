@@ -1,29 +1,21 @@
-version: '3.8'
+# Local isolated CLI sandbox only. Not production IaC.
+# No databases, message brokers, or cloud services.
+# Usage: docker compose up --build
 services:
-  backend:
-    build: ./platform/backend
-    ports:
-      - '8000:8000'
-    volumes:
-      - ./:/srv/project:ro
-      - ./platform/backend/app:/app/app:ro
+  ssg:
+    build: .
     environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      - redis
-      - db
-
-  # Frontend is optional during local dev; run with `npm run dev` in frontend/
-  redis:
-    image: redis:7
-    ports:
-      - '6379:6379'
-
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: platform
-    ports:
-      - '5432:5432'
+      SSG_LOG_LEVEL: INFO
+      SSG_LOG_FORMAT: json
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        ssg health
+        ssg init /tmp/sandbox-site --name Sandbox --url http://localhost:8000
+        ssg build --config /tmp/sandbox-site/config.yml
+        test -f /tmp/sandbox-site/dist/index.html
+        test -f /tmp/sandbox-site/dist/feed.xml
+        test -f /tmp/sandbox-site/dist/sitemap.xml
+        echo "SANDBOX_OK write/verify/replay complete"
