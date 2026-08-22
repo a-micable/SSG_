@@ -32,11 +32,13 @@ def main() -> int:
                 "-m",
                 "piptools",
                 "compile",
+                "--extra",
+                "dev",
                 "--allow-unsafe",
                 "--generate-hashes",
                 "--output-file",
                 str(compiled),
-                str(root / "requirements.in"),
+                str(root / "pyproject.toml"),
             ]
         )
         a = pins(committed)
