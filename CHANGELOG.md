@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-08-22
+
+### Added
+- Structured logging in builder, assets, and feed (no `print()` progress).
+- `ssg.site_scaffold` extracted from the CLI so `ssg/cli.py` stays under 500 LOC.
+- Fresh-clone `smoke-test` CI job (`venv` + `pip install -r requirements.txt` + `make test`).
+- Broader ruff rule set (`E`, `F`, `I`, `UP`, `B`).
+
+### Fixed
+- `ParsedContent.date` is a `datetime` (BUG 1).
+- Transitive template invalidation via `template_includes` (BUG 2).
+- `Paginator.total_pages` ceiling division (BUG 3).
+- RSS `_format_rfc822_date` emits GMT via `timezone.utc` (BUG 4).
+- Relative asset `href`/`src` rewrite to fingerprinted URLs (BUG 5).
+
 ## [Unreleased]
 
 ### Added
@@ -19,14 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Paginator page count no longer adds an extra empty page when items divide evenly.
 - Asset directories from YAML strings are coerced to `Path` before processing.
 
-### Known Issues
-- Date parsing stores dates as strings (BUG 1)
-- Template dependency tracking incomplete (BUG 2)
-- Pagination off-by-one error (BUG 3)
-- RSS timezone handling uses local time (BUG 4)
-- Asset path resolution breaks on nested pages (BUG 5)
-
-## [1.0.0] - 2024-03-15
+## [0.9.0] - 2024-03-15
 
 ### Added
 - Complete CLI with `build`, `init`, and `serve` commands
