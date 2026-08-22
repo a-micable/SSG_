@@ -4,6 +4,7 @@ Handles static files like CSS, JS, and images.
 """
 
 import hashlib
+import re
 import shutil
 from pathlib import Path
 from typing import Dict, Set
@@ -17,11 +18,7 @@ class AssetError(Exception):
 
 
 class AssetProcessor:
-    """
-    Processes static assets with optional fingerprinting.
-
-    BUG 5 LOCATION: Path resolution for fingerprinted assets breaks on nested pages.
-    """
+    """Processes static assets with content-hash fingerprinting and URL rewrite."""
 
     def __init__(self, config: SiteConfig):
         """
@@ -99,8 +96,6 @@ class AssetProcessor:
             # Build output path
             output_path = self.config.output_dir / rel_path.parent / fingerprinted_name
 
-            # Store mapping for URL rewriting
-            # BUG 5: This doesn't handle nested page paths correctly
             original_url = f"/{rel_path.as_posix()}"
             fingerprinted_url = f"/{rel_path.parent.as_posix()}/{fingerprinted_name}"
             if rel_path.parent == Path("."):
@@ -139,23 +134,7 @@ class AssetProcessor:
         print(f"  Processed {processed_count} files from {asset_dir.name}")
 
     def process(self):
-        """
-        Process all configured asset directories.
-
-        BUG 5: Fingerprinted asset URLs work on root pages but break on nested pages.
-
-        Example:
-            Root page (index.html):
-                <link rel="stylesheet" href="/style.abc123.css"> ✓ Works
-
-            Nested page (blog/post-1/index.html):
-                <link rel="stylesheet" href="/style.abc123.css"> ✓ Works
-                BUT if using relative paths:
-                <link rel="stylesheet" href="../style.abc123.css"> ✗ Breaks
-
-        The bug is in how fingerprinted URLs are generated - they don't account
-        for the depth of the page requesting the asset.
-        """
+        """Copy configured asset directories and record fingerprint mappings."""
         for asset_dir_name in self.config.asset_dirs:
             # Asset dirs can be relative to content dir or absolute
             asset_dir = Path(asset_dir_name)
@@ -168,26 +147,17 @@ class AssetProcessor:
             print(f"  Generated {len(self.fingerprint_map)} fingerprinted assets")
 
     def rewrite_asset_urls(self, html: str, page_depth: int = 0) -> str:
-        """
-        Rewrite asset URLs in HTML to use fingerprinted versions.
-
-        BUG 5 LOCATION: This doesn't adjust URLs based on page depth.
-
-        Args:
-            html: HTML content
-            page_depth: Depth of the page (0 for root, 1 for /blog/, etc.)
-
-        Returns:
-            HTML with rewritten URLs
-        """
-        # Simple find-and-replace (not production-ready, but adequate)
+        """Rewrite absolute and relative asset href/src to fingerprinted URLs."""
+        del page_depth  # depth-independent: relatives collapse to site-root fingerprinted URLs
         for original, fingerprinted in self.fingerprint_map.items():
             html = html.replace(f'href="{original}"', f'href="{fingerprinted}"')
             html = html.replace(f'src="{original}"', f'src="{fingerprinted}"')
-
-        # BUG 5: Doesn't handle relative paths like href="../style.css"
-        # These break on nested pages when they should be converted to absolute paths
-
+            name = original.lstrip("/")
+            html = re.sub(
+                rf'(href|src)="(?:\.\./)*{re.escape(name)}"',
+                rf'\1="{fingerprinted}"',
+                html,
+            )
         return html
 
     def get_fingerprinted_url(self, original_path: str) -> str:

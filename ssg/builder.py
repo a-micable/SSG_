@@ -143,6 +143,7 @@ class SiteBuilder:
 
         # Render content
         html = self.renderer.render_content(content)
+        html = self.asset_processor.rewrite_asset_urls(html, page_depth=1)
 
         # Write output
         output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -139,14 +139,12 @@ class TestAssetProcessor:
             "/style.css": "/style.abc123.css",
         }
 
-        # BUG 5: Relative paths aren't handled correctly
         html = '<link rel="stylesheet" href="../style.css">'
 
         result = processor.rewrite_asset_urls(html)
 
-        # BUG 5: Relative path isn't converted to absolute
-        # This will break on nested pages
-        assert "../style.css" in result  # BUG! Should be converted
+        assert "/style.abc123.css" in result
+        assert "../style.css" not in result
 
     def test_get_fingerprinted_url(self, sample_config):
         """Test getting fingerprinted URL for an asset."""
